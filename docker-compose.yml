@@ -1,0 +1,11 @@
+services:
+  db:
+    container_name: murkov
+    image: postgres
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    ports:
+      - ${PORT}:5432
+    volumes:
+      - ./postgres.db:/var/lib/postgresql/data
