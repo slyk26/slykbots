@@ -10,21 +10,20 @@ use crate::commands::{COMMANDS, create_task, send_response};
 use crate::service::reminder_service::{ACTIVE_REMINDERS, ReminderService};
 
 pub async fn call(ctx: &Context, ready: &Ready, db: &Pool<Postgres>) {
-    println!("{} is online!", ready.user.name);
+    info!("{} is online!", ready.user.name);
 
     register_commands(&ctx).await;
     status_update_thread(ctx.clone());
-    // log_active_reminders();
+    log_active_reminders();
     recover_reminder_tasks(&ctx, db).await;
 }
 
-#[allow(dead_code)]
 fn log_active_reminders() {
     tokio::spawn(async move {
         let mut interval = interval(Duration::from_secs(1));
         loop {
             interval.tick().await;
-            println!("{:?}", ACTIVE_REMINDERS.lock().await.keys());
+            debug!("{:?}", ACTIVE_REMINDERS.lock().await.keys());
         }
     });
 }
@@ -48,10 +47,10 @@ async fn register_commands(ctx: &Context) {
         }).await;
 
         let _ = match result {
-            Ok(_) => println!("/{} registered", cmd.0),
+            Ok(_) => info!("/{} registered", cmd.0),
             Err(e) => {
-                println!("{:?}", e.to_string());
-                panic!("Problem creating command")
+                info!("{:?}", e.to_string());
+                error!("Problem creating command")
             }
         };
     }
@@ -60,6 +59,7 @@ async fn register_commands(ctx: &Context) {
 async fn recover_reminder_tasks(ctx: &Context, db: &Pool<Postgres>) {
     match ReminderService::get_active(&db).await {
         Ok(reminders) => {
+            info!("recovering {} reminders", reminders.len());
             for r in reminders {
                 let leftover = r.remind_at - chrono::Utc::now();
                 let l: Duration = Duration::from_secs(leftover.num_seconds() as u64);
@@ -74,8 +74,7 @@ async fn recover_reminder_tasks(ctx: &Context, db: &Pool<Postgres>) {
             }
         }
         Err(e) => {
-            eprintln!("{}", e);
-            // log could not fetch active reminders
+            error!("{}", e);
         }
     }
 }

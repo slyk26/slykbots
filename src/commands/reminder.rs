@@ -74,7 +74,7 @@ impl SlashCommand for Reminder {
                     r = format!("Created Reminder with id {}! You will be notified at: {} UTC time.\n\
                     You can abort anytime using `/abort {}`", id, time.format("%d.%m.%Y %H:%M:%S"), id);
                 }
-                Err(e) => { println!("{}", e) }
+                Err(e) => { error!("{}", e) }
             }
         } else {
             r = format!("Invalid time specified. Try something like: 3hours 20 min");
@@ -90,6 +90,7 @@ impl SlashCommand for Reminder {
 }
 
 pub fn create_task(duration: std::time::Duration, f: impl Future<Output=()> + Send + 'static) -> JoinHandle<()> {
+    debug!("creating task");
     task::spawn(async move {
         sleep(duration).await;
         f.await;
@@ -97,6 +98,7 @@ pub fn create_task(duration: std::time::Duration, f: impl Future<Output=()> + Se
 }
 
 pub async fn send_response(ctx: Context, channel_id: ChannelId, user_id: UserId, message: String, id: i32, db: Pool<Postgres>) {
+    debug!("sending response");
     let http = ctx.http.clone();
     let content = MessageBuilder::new()
         .mention(&user_id)

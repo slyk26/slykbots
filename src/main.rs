@@ -3,6 +3,8 @@ mod commands;
 mod handler;
 mod service;
 
+#[macro_use]
+extern crate log;
 use std::env::var;
 use std::time::Duration;
 use dotenv::dotenv;
@@ -14,6 +16,7 @@ use crate::handler::Handler;
 async fn main() {
     // load configs
     dotenv().ok();
+    pretty_env_logger::init();
     let url = var("DATABASE_URL").expect("DATABASE_URL not found");
     let token = var("BOT_TOKEN").expect("BOT_TOKEN not found");
     let pool = sqlx::postgres::PgPoolOptions::new()
@@ -29,6 +32,6 @@ async fn main() {
 
     // start bot
     if let Err(why) = bot.start().await {
-        println!("Client error: {:?}", why);
+        error!("Client error: {:?}", why);
     }
 }

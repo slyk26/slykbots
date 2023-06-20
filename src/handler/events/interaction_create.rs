@@ -14,7 +14,7 @@ pub async fn call(ctx: &Context, interaction: &Interaction, database: &Pool<Post
                 application_command::call(&ctx, &interaction, &cmd, database).await;
             }
 
-            _ => { println!("unknown interaction type") }
+            _ => { warn!("unknown interaction type") }
         }
     } else {
         match interaction {
@@ -27,7 +27,7 @@ pub async fn call(ctx: &Context, interaction: &Interaction, database: &Pool<Post
                     }).await;
             }
 
-            _ => { println!("unknown interaction type") }
+            _ => { warn!("unknown interaction type") }
         }
     }
 }

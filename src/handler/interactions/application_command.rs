@@ -7,6 +7,6 @@ pub async fn call(ctx: &Context, aci: &ApplicationCommandInteraction, cmd: &Box<
     if let Err(why) = cmd.execute(ctx, aci, &database)
         .await
     {
-        println!("Cannot respond to slash command '/{}': {}", cmd.name(), why);
+        warn!("Cannot respond to slash command '/{}': {}", cmd.name(), why);
     }
 }
