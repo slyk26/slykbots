@@ -1,17 +1,36 @@
-use std::error::Error;
+#![feature(unwrap_infallible)]
+
+mod models;
+mod commands;
+mod handler;
+mod service;
+
 use std::env::var;
+use std::time::Duration;
 use dotenv::dotenv;
+use serenity::prelude;
+use serenity::prelude::GatewayIntents;
+use crate::handler::Handler;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() {
+    // load configs
     dotenv().ok();
-    let url = var("DATABASE_URL").unwrap();
-    let pool = sqlx::postgres::PgPool::connect(url.as_str()).await?;
+    let url = var("DATABASE_URL").expect("DATABASE_URL not found");
+    let token = var("BOT_TOKEN").expect("BOT_TOKEN not found");
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .max_lifetime(Duration::from_secs(60))
+        .max_connections(25)
+        .connect(url.as_str()).await.expect("Cannot create Database Pool");
+    let _ = sqlx::migrate!("./migrations").run(&pool).await;
+    // create bot
+    let mut bot = prelude::Client::builder(token, GatewayIntents::empty())
+        .event_handler(Handler { database: pool })
+        .await
+        .expect("Error creating client");
 
-    sqlx::migrate!().run(&pool).await?;
-
-    Ok(())
+    // start bot
+    if let Err(why) = bot.start().await {
+        println!("Client error: {:?}", why);
+    }
 }
-
-// https://users.rust-lang.org/t/how-to-run-a-function-after-a-time-delay/86260
-// https://invidious.nerdvpn.de/watch?v=TCERYbgvbq0
