@@ -1,6 +1,15 @@
 services:
+  bot:
+    build: .
+    command: ./murkov
+    env_file:
+      - .env
+    depends_on:
+    - db
+    container_name:
+      murkov-bot
   db:
-    container_name: murkov
+    container_name: murkov-db
     image: postgres
     environment:
       - POSTGRES_USER

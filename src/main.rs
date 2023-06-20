@@ -1,5 +1,3 @@
-#![feature(unwrap_infallible)]
-
 mod models;
 mod commands;
 mod handler;
