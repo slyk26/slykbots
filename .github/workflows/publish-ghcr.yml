@@ -4,17 +4,15 @@ on:
   push
 
 jobs:
-  build_and_publish:
-
+  build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - uses: pguyot/arm-runner-action@v2.5.2
-    - name: build and push the docker image
-      with:
-        base_image: dietpi:rpi_armv8_bullseye
-      run: |
-        docker login --username slyk26 --password ${{ secrets.GH_PAT }} ghcr.io
-        docker build . --tag ghcr.io/slyk26/murkov:latest --platform=linux/arm64/v8
-        docker push ghcr.io/slyk26/murkov:latest
+      - uses: actions/checkout@v2
+      - uses: pguyot/arm-runner-action@v2
+        id: build_and_publish
+        with:
+          base_image: dietpi:rpi_armv8_bullseye
+          commands: |
+            docker login --username slyk26 --password ${{ secrets.GH_PAT }} ghcr.io
+            docker build . --tag ghcr.io/slyk26/murkov:latest --platform=linux/arm64/v8
+            docker push ghcr.io/slyk26/murkov:latest
