@@ -11,7 +11,7 @@ jobs:
       DOCKER_REGISTRY: ghcr.io/
       DOCKER_IMAGE: slyk26/murkov
       DOCKER_USERNAME:  slyk26
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_PASSWORD: ${{ secrets.GH_PAT }}
       DOCKER_TARGET_PLATFORM: linux/arm64/v8
 
     steps:
