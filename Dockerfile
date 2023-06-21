@@ -1,4 +1,4 @@
-FROM amd64v8/rust:latest AS builder
+FROM arm64v8/rust:latest AS builder
 RUN update-ca-certificates
 
 # Create appuser
