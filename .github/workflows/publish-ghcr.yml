@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      DOCKER_REGISTRY: ghcr.io/
+      DOCKER_REGISTRY: ghcr.io
       DOCKER_IMAGE: slyk26/murkov
       DOCKER_USERNAME:  slyk26
       DOCKER_PASSWORD: ${{ secrets.GH_PAT }}
