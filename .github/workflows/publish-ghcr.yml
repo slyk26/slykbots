@@ -8,7 +8,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      DOCKER_TARGET_PLATFORM: linux/arm/v8
+      DOCKER_TARGET_PLATFORM: linux/arm64/v8
 
     steps:
     - uses: actions/checkout@v3
