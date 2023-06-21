@@ -34,7 +34,7 @@ jobs:
       - name: Docker Login
         if: success()
         run: |
-          echo "${DOCKER_PASSWORD}" | docker login ${DOCKER_REGISTRY} --username "${DOCKER_USERNAME}" --password-stdin          
+          docker login ${DOCKER_REGISTRY} --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}"      
 
       - name: Run Buildx (push image)
         if: success()
