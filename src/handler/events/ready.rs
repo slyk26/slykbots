@@ -14,18 +14,7 @@ pub async fn call(ctx: &Context, ready: &Ready, db: &Pool<Postgres>) {
 
     register_commands(&ctx).await;
     status_update_thread(ctx.clone());
-    log_active_reminders();
     recover_reminder_tasks(&ctx, db).await;
-}
-
-fn log_active_reminders() {
-    tokio::spawn(async move {
-        let mut interval = interval(Duration::from_secs(1));
-        loop {
-            interval.tick().await;
-            debug!("{:?}", ACTIVE_REMINDERS.lock().await.keys());
-        }
-    });
 }
 
 fn status_update_thread(ctx_for_thread: Context) {

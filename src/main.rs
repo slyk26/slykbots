@@ -23,9 +23,11 @@ async fn main() {
         .max_lifetime(Duration::from_secs(60))
         .max_connections(25)
         .connect(url.as_str()).await.expect("Cannot create Database Pool");
-    let _ = sqlx::migrate!("./migrations").run(&pool).await;
+    if let Err(e) = sqlx::migrate!().run(&pool).await {
+        error!("{:?}",e);
+    }
     // create bot
-    let mut bot = prelude::Client::builder(token, GatewayIntents::empty())
+    let mut bot = prelude::Client::builder(token, GatewayIntents::MESSAGE_CONTENT | GatewayIntents::GUILD_MESSAGES)
         .event_handler(Handler { database: pool })
         .await
         .expect("Error creating client");

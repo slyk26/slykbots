@@ -1,5 +1,3 @@
-create type state as enum ('ACTIVE', 'DONE', 'INVALID', 'ABORTED');
-
 create table reminders
 (
     id         serial primary key,

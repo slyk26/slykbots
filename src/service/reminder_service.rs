@@ -26,7 +26,7 @@ impl ReminderService {
             .bind(State::ACTIVE)
             .fetch_one(db).await {
             Ok(result) => Ok(result.get::<i32, _>(0)),
-            Err(e) => {Err(e)}
+            Err(e) => Err(e)
         }
     }
 
