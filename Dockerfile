@@ -24,8 +24,7 @@ FROM gcr.io/distroless/cc
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
-COPY --from=builder /bin/mkdir /bin/mkdir
-COPY --from=builder /bin/cat /bin/cat
+COPY --from=builder /bin/bash /bin/bash
 
 WORKDIR /murkov
 
