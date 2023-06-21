@@ -13,6 +13,7 @@ jobs:
         with:
           base_image: dietpi:rpi_armv8_bullseye
           commands: |
+            apt install docker
             docker login --username slyk26 --password ${{ secrets.GH_PAT }} ghcr.io
             docker build . --tag ghcr.io/slyk26/murkov:latest --platform=linux/arm64/v8
             docker push ghcr.io/slyk26/murkov:latest
