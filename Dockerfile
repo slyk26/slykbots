@@ -1,4 +1,4 @@
-FROM arm64v8/rust:latest AS builder
+FROM rust:latest AS builder
 RUN update-ca-certificates
 
 # Create appuser
@@ -24,6 +24,8 @@ FROM gcr.io/distroless/cc
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
+COPY --from=builder /bin/mkdir /bin/mkdir
+COPY --from=builder /bin/cat /bin/cat
 
 WORKDIR /murkov
 
