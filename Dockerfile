@@ -1,4 +1,4 @@
-FROM rust:latest AS builder
+FROM amd64/rust:latest AS builder
 RUN update-ca-certificates
 
 # Create appuser
