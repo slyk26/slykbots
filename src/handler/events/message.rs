@@ -8,7 +8,9 @@ use crate::models::MarkovModel;
 use crate::service::markov_service::MarkovService;
 
 pub async fn call(ctx: &Context, new_message: Message, db: &Pool<Postgres>) {
-    destruct_message(&new_message, db).await;
+    if ! mentions_me_wrapper(ctx.http.clone(), &new_message).await {
+        destruct_message(&new_message, db).await;
+    }
 
     if !new_message.author.bot &&
         (thread_rng().gen_range(0..100) < 7 || mentions_me_wrapper(ctx.http.clone(), &new_message).await) {
