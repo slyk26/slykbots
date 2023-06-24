@@ -29,7 +29,7 @@ impl SlashCommand for Stats {
         embed.title("Stats")
             .colour(Color::from_rgb(255, 255, 255))
             .field(format!("learned {} Markov entries here", entries), "", false)
-            .field(format!("can talk: {}", MarkovService::get_max(database, &guild_str).await > 1000), "", false)
+            .field(format!("learned enough words to talk: {}", MarkovService::get_max(database, &guild_str).await > 1000), "", false)
             .field(format!("active in {} servers", used), "", false)
             .field("made by: slyk26", "", false)
             .field(format!("version: {}", env!("CARGO_PKG_VERSION")), "", false);
