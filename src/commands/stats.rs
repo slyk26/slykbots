@@ -27,8 +27,8 @@ impl SlashCommand for Stats {
 
         embed.title("Stats")
             .colour(Color::from_rgb(255, 255, 255))
-            .field(format!("learned Markov entries: {}", entries), "", false)
-            .field(format!("used in {} servers", used), "", false)
+            .field(format!("learned {} Markov entries here", entries), "", false)
+            .field(format!("active in {} servers", used), "", false)
             .field("made by: slyk26", "", false)
             .field(format!("version: {}", env!("CARGO_PKG_VERSION")), "", false);
 
