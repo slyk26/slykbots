@@ -1,7 +1,6 @@
-mod models;
 mod commands;
 mod handler;
-mod service;
+mod markov_chains;
 
 #[macro_use]
 extern crate log;
@@ -24,7 +23,7 @@ async fn main() {
         .max_connections(25)
         .connect(url.as_str()).await.expect("Cannot create Database Pool");
     if let Err(e) = sqlx::migrate!().run(&pool).await {
-        error!("{:?}",e);
+        error!("Migration: {:?}",e);
     }
     // create bot
     let mut bot = prelude::Client::builder(token, GatewayIntents::MESSAGE_CONTENT | GatewayIntents::GUILD_MESSAGES)

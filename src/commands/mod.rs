@@ -1,23 +1,15 @@
-mod reminder;
-mod help;
-mod abort;
+mod stats;
 
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use slash_command::SlashCommand;
-use reminder::Reminder;
-use help::Help;
-use crate::commands::abort::Abort;
 
-pub use crate::commands::reminder::create_task;
-pub use crate::commands::reminder::send_response;
+use crate::commands::stats::Stats;
 
 lazy_static! {
     pub static ref COMMANDS: HashMap<String, Box<dyn SlashCommand>> = {
         let mut m: HashMap<String, Box<dyn SlashCommand>> = HashMap::new();
-        m.insert(Reminder.name(), Box::new(Reminder));
-        m.insert(Help.name(), Box::new(Help));
-        m.insert(Abort.name(), Box::new(Abort));
+        m.insert(Stats.name(), Box::new(Stats));
         m
     };
 }

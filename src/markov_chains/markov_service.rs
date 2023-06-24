@@ -1,11 +1,14 @@
-use sqlx::{Postgres, Pool, Error, query, Row, query_as};
+use sqlx::{Postgres, Pool, Error, query, Row, query_as, Decode, Type};
 use rand::{Rng, thread_rng};
-use crate::models::MarkovModel;
+use serenity::model::prelude::Message;
+use serenity::prelude::Context;
+use sqlx::postgres::PgRow;
+use crate::markov_chains::markov_model::MarkovModel;
 
 pub struct MarkovService;
 
 impl MarkovService {
-    pub async fn store(db: &Pool<Postgres>, part: MarkovModel) {
+    async fn store(db: &Pool<Postgres>, part: MarkovModel) {
         if let Some(id) = MarkovService::check_if_exists(db, &part).await {
             if let Some(freq) = MarkovService::get_frequency(db, id).await {
                 let _ = MarkovService::update(db, id, freq + 1).await;
@@ -24,9 +27,9 @@ impl MarkovService {
             .bind(&part.guild_id)
             .bind(&part.current_word)
             .bind(&part.next_word)
-            .bind(&part.frequency)
+            .bind(part.frequency)
             .fetch_one(db).await {
-            Ok(row) => Ok(row.get::<i32, _>(0)),
+            Ok(row) => Ok(MarkovService::get_aggregate_result(&row)),
             Err(e) => Err(e)
         }
     }
@@ -50,10 +53,7 @@ impl MarkovService {
             .bind(&part.guild_id)
             .fetch_optional(db).await {
             Ok(d) => {
-                match d {
-                    Some(row) => Some(row.get::<i32, _>(0)),
-                    None => None
-                }
+                d.map(|row| MarkovService::get_aggregate_result(&row))
             }
             Err(e) => {
                 warn!("check_if_exists: {}", e);
@@ -67,10 +67,7 @@ impl MarkovService {
             .bind(id)
             .fetch_optional(db).await {
             Ok(d) => {
-                match d {
-                    Some(row) => Some(row.get::<i32, _>(0)),
-                    None => None
-                }
+                d.map(|row| MarkovService::get_aggregate_result(&row))
             }
             Err(e) => {
                 warn!("get_frequency: {}", e);
@@ -79,10 +76,11 @@ impl MarkovService {
         }
     }
 
-    async fn get_max(db: &Pool<Postgres>) -> i32 {
-        match query("select max(id) from markov_data")
+    async fn get_max(db: &Pool<Postgres>, guild_id: &String) -> i32 {
+        match query("select count(*) from markov_data where guild_id = $1")
+            .bind(guild_id)
             .fetch_one(db).await {
-            Ok(row) => row.get::<i32, _>(0),
+            Ok(row) => MarkovService::get_aggregate_result(&row),
             Err(e) => {
                 warn!("get_max: {}", e);
                 0
@@ -90,14 +88,14 @@ impl MarkovService {
         }
     }
 
-    async fn get_by_id(db: &Pool<Postgres>, id: i32) -> Result<MarkovModel, Error> {
-        query_as("select * from markov_data where id = $1")
-            .bind(id)
+    async fn get_start_model(db: &Pool<Postgres>, guild_id: &String) -> Result<MarkovModel, Error> {
+        query_as("select * from markov_data where guild_id = $1 order by random() limit 1")
+            .bind(guild_id)
             .fetch_one(db).await
     }
 
-    pub async fn generate_message(db: &Pool<Postgres>) -> String {
-        let max = MarkovService::get_max(db).await;
+    async fn generate_message(db: &Pool<Postgres>, guild_id: String) -> String {
+        let max = MarkovService::get_max(db, &guild_id).await;
         debug!("generating message with {} entries", max);
         let mut msg = String::new();
 
@@ -106,9 +104,7 @@ impl MarkovService {
             return msg;
         }
 
-        let start_id = thread_rng().gen_range(1..=max);
-
-        if let Ok(start) = MarkovService::get_by_id(db, start_id).await {
+        if let Ok(start) = MarkovService::get_start_model(db, &guild_id).await {
             let mut part = start;
 
             while msg.len() < 2000 {
@@ -135,10 +131,70 @@ impl MarkovService {
                 .bind(from_guild)
                 .fetch_all(db).await {
             let idx = thread_rng().gen_range(0..possibilities.len());
-            return possibilities[idx].clone()
+            possibilities[idx].clone()
         } else {
             error!("cannot fetch next markov part");
-            MarkovModel::empty()
+            MarkovModel {
+                id: -1,
+                guild_id: "".to_string(),
+                current_word: "".to_string(),
+                next_word: None,
+                frequency: -1,
+            }
         }
+    }
+
+    pub async fn send_message(ctx: &Context, msg: &Message, db: &Pool<Postgres>) {
+        if !msg.author.bot {
+            let message = MarkovService::generate_message(db, msg.guild_id.unwrap().to_string()).await;
+            let _ = msg.channel_id.send_message(&ctx.http, |m| {
+                m.content(message)
+            }).await;
+        }
+    }
+
+    pub async fn destruct_message(msg: &Message, db: &Pool<Postgres>) {
+        if !msg.author.bot {
+            let words = msg.content.split(' ').collect::<Vec<&str>>();
+
+            for i in 0..words.len() {
+                let current = words[i].to_string();
+                let mut next: Option<String> = None;
+                if i + 1 < words.len() {
+                    next = Some(words[i + 1].to_string());
+                }
+                MarkovService::store(db, MarkovModel {
+                    id: 0,
+                    guild_id: msg.guild_id.unwrap().to_string(),
+                    current_word: current,
+                    next_word: next,
+                    frequency: 1,
+                }).await;
+            }
+        }
+    }
+
+    pub async fn get_stats(db: &Pool<Postgres>, guild_id: String) -> (i64, i64) {
+        let mut entries = -1;
+        let mut used = -1;
+
+        match query("select count(*) from markov_data where guild_id = $1")
+            .bind(guild_id)
+            .fetch_one(db).await {
+            Ok(row) => entries = MarkovService::get_aggregate_result(&row),
+            Err(e) => warn!("cannot get entries: {}", e)
+        }
+
+        match query("select count(distinct guild_id) from markov_data")
+            .fetch_one(db).await {
+            Ok(row) => used = MarkovService::get_aggregate_result(&row),
+            Err(e) => warn!("cannot get used servers: {}", e)
+        }
+
+        (entries, used)
+    }
+
+    fn get_aggregate_result<'r, T: Decode<'r, Postgres> + Type<Postgres>>(row: &'r PgRow) -> T {
+        row.get::<T, _>(0)
     }
 }

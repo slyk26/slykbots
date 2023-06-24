@@ -11,7 +11,7 @@ pub async fn call(ctx: &Context, interaction: &Interaction, database: &Pool<Post
             // regular response (text) => returns the result of the called SlashCommand
             Interaction::ApplicationCommand(interaction) => {
                 let cmd = COMMANDS.get(interaction.data.name.as_str()).expect("No Command found in command map");
-                application_command::call(&ctx, &interaction, &cmd, database).await;
+                application_command::call(ctx, interaction, cmd.as_ref(), database).await;
             }
 
             _ => { warn!("unknown interaction type") }
