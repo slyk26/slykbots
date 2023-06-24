@@ -18,7 +18,7 @@ impl MarkovService {
         }
     }
 
-    async fn insert(db: &Pool<Postgres>, part: &MarkovModel) -> Result<i32, Error> {
+    async fn insert(db: &Pool<Postgres>, part: &MarkovModel) -> Result<i64, Error> {
         debug!("inserting words '{}' - '{:?}'", part.current_word, part.next_word);
 
         match query("insert into markov_data \
@@ -34,7 +34,7 @@ impl MarkovService {
         }
     }
 
-    async fn update(db: &Pool<Postgres>, id: i32, freq: i32) -> Result<(), Error> {
+    async fn update(db: &Pool<Postgres>, id: i64, freq: i64) -> Result<(), Error> {
         debug!("updating id {} - new freq {}", id, freq);
 
         match query("update markov_data set frequency = $1 where id = $2")
@@ -46,7 +46,7 @@ impl MarkovService {
         }
     }
 
-    async fn check_if_exists(db: &Pool<Postgres>, part: &MarkovModel) -> Option<i32> {
+    async fn check_if_exists(db: &Pool<Postgres>, part: &MarkovModel) -> Option<i64> {
         match query("select id from markov_data where current_word = $1 and next_word = $2 and guild_id = $3")
             .bind(&part.current_word)
             .bind(&part.next_word)
@@ -62,7 +62,7 @@ impl MarkovService {
         }
     }
 
-    async fn get_frequency(db: &Pool<Postgres>, id: i32) -> Option<i32> {
+    async fn get_frequency(db: &Pool<Postgres>, id: i64) -> Option<i64> {
         match query("select frequency from markov_data where id = $1")
             .bind(id)
             .fetch_optional(db).await {
@@ -76,7 +76,7 @@ impl MarkovService {
         }
     }
 
-    async fn get_max(db: &Pool<Postgres>, guild_id: &String) -> i32 {
+    async fn get_max(db: &Pool<Postgres>, guild_id: &String) -> i64 {
         match query("select count(*) from markov_data where guild_id = $1")
             .bind(guild_id)
             .fetch_one(db).await {
@@ -194,7 +194,7 @@ impl MarkovService {
         (entries, used)
     }
 
-    fn get_aggregate_result<'r, T: Decode<'r, Postgres> + Type<Postgres>>(row: &'r PgRow) -> T {
-        row.get::<T, _>(0)
+    fn get_aggregate_result(row: &PgRow) -> i64 {
+        row.get::<i64, _>(0)
     }
 }
