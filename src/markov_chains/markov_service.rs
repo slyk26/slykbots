@@ -1,8 +1,7 @@
-use sqlx::{Postgres, Pool, Error, query, Row, query_as, Decode, Type};
+use sqlx::{Postgres, Pool, Error, query, Row, query_as};
 use rand::{Rng, thread_rng};
 use serenity::model::prelude::Message;
 use serenity::prelude::Context;
-use sqlx::postgres::PgRow;
 use crate::markov_chains::markov_model::MarkovModel;
 
 pub struct MarkovService;
@@ -18,7 +17,7 @@ impl MarkovService {
         }
     }
 
-    async fn insert(db: &Pool<Postgres>, part: &MarkovModel) -> Result<i64, Error> {
+    async fn insert(db: &Pool<Postgres>, part: &MarkovModel) -> Result<i32, Error> {
         debug!("inserting words '{}' - '{:?}'", part.current_word, part.next_word);
 
         match query("insert into markov_data \
@@ -29,12 +28,12 @@ impl MarkovService {
             .bind(&part.next_word)
             .bind(part.frequency)
             .fetch_one(db).await {
-            Ok(row) => Ok(MarkovService::get_aggregate_result(&row)),
+            Ok(row) => Ok(row.get::<i32, _>(0)),
             Err(e) => Err(e)
         }
     }
 
-    async fn update(db: &Pool<Postgres>, id: i64, freq: i64) -> Result<(), Error> {
+    async fn update(db: &Pool<Postgres>, id: i32, freq: i32) -> Result<(), Error> {
         debug!("updating id {} - new freq {}", id, freq);
 
         match query("update markov_data set frequency = $1 where id = $2")
@@ -46,14 +45,14 @@ impl MarkovService {
         }
     }
 
-    async fn check_if_exists(db: &Pool<Postgres>, part: &MarkovModel) -> Option<i64> {
+    async fn check_if_exists(db: &Pool<Postgres>, part: &MarkovModel) -> Option<i32> {
         match query("select id from markov_data where current_word = $1 and next_word = $2 and guild_id = $3")
             .bind(&part.current_word)
             .bind(&part.next_word)
             .bind(&part.guild_id)
             .fetch_optional(db).await {
             Ok(d) => {
-                d.map(|row| MarkovService::get_aggregate_result(&row))
+                d.map(|row| row.get::<i32, _>(0))
             }
             Err(e) => {
                 warn!("check_if_exists: {}", e);
@@ -62,12 +61,12 @@ impl MarkovService {
         }
     }
 
-    async fn get_frequency(db: &Pool<Postgres>, id: i64) -> Option<i64> {
+    async fn get_frequency(db: &Pool<Postgres>, id: i32) -> Option<i32> {
         match query("select frequency from markov_data where id = $1")
             .bind(id)
             .fetch_optional(db).await {
             Ok(d) => {
-                d.map(|row| MarkovService::get_aggregate_result(&row))
+                d.map(|row| row.get::<i32, _>(0))
             }
             Err(e) => {
                 warn!("get_frequency: {}", e);
@@ -76,11 +75,11 @@ impl MarkovService {
         }
     }
 
-    async fn get_max(db: &Pool<Postgres>, guild_id: &String) -> i64 {
+    async fn get_max(db: &Pool<Postgres>, guild_id: &String) -> i32 {
         match query("select count(*) from markov_data where guild_id = $1")
             .bind(guild_id)
             .fetch_one(db).await {
-            Ok(row) => MarkovService::get_aggregate_result(&row),
+            Ok(row) => row.get::<i32, _>(0),
             Err(e) => {
                 warn!("get_max: {}", e);
                 0
@@ -181,20 +180,16 @@ impl MarkovService {
         match query("select count(*) from markov_data where guild_id = $1")
             .bind(guild_id)
             .fetch_one(db).await {
-            Ok(row) => entries = MarkovService::get_aggregate_result(&row),
+            Ok(row) => entries = row.get::<i64, _>(0),
             Err(e) => warn!("cannot get entries: {}", e)
         }
 
         match query("select count(distinct guild_id) from markov_data")
             .fetch_one(db).await {
-            Ok(row) => used = MarkovService::get_aggregate_result(&row),
+            Ok(row) => used = row.get::<i64, _>(0),
             Err(e) => warn!("cannot get used servers: {}", e)
         }
 
         (entries, used)
-    }
-
-    fn get_aggregate_result(row: &PgRow) -> i64 {
-        row.get::<i64, _>(0)
     }
 }
