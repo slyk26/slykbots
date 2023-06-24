@@ -23,11 +23,13 @@ impl SlashCommand for Stats {
 
     async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction, database: &Pool<Postgres>) -> Result<(), SerenityError> {
         let mut embed = CreateEmbed::default();
-        let (entries, used) = MarkovService::get_stats(database, command.guild_id.unwrap().to_string()).await;
+        let guild_str = command.guild_id.unwrap().to_string();
+        let (entries, used) = MarkovService::get_stats(database, &guild_str).await;
 
         embed.title("Stats")
             .colour(Color::from_rgb(255, 255, 255))
             .field(format!("learned {} Markov entries here", entries), "", false)
+            .field(format!("can talk: {}", MarkovService::get_max(database, &guild_str).await > 1000), "", false)
             .field(format!("active in {} servers", used), "", false)
             .field("made by: slyk26", "", false)
             .field(format!("version: {}", env!("CARGO_PKG_VERSION")), "", false);

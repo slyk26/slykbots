@@ -75,7 +75,7 @@ impl MarkovService {
         }
     }
 
-    async fn get_max(db: &Pool<Postgres>, guild_id: &String) -> i64 {
+    pub async fn get_max(db: &Pool<Postgres>, guild_id: &String) -> i64 {
         match query("select count(*) from markov_data where guild_id = $1")
             .bind(guild_id)
             .fetch_one(db).await {
@@ -100,7 +100,7 @@ impl MarkovService {
 
         if max < 1000 {
             warn!("[{}] not enough markov entries: {}",guild_id, max);
-            return msg
+            return msg;
         }
 
         if let Ok(start) = MarkovService::get_start_model(db, &guild_id).await {
@@ -173,7 +173,7 @@ impl MarkovService {
         }
     }
 
-    pub async fn get_stats(db: &Pool<Postgres>, guild_id: String) -> (i64, i64) {
+    pub async fn get_stats(db: &Pool<Postgres>, guild_id: &String) -> (i64, i64) {
         let mut entries = -1;
         let mut used = -1;
 
