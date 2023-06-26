@@ -1,6 +1,6 @@
 # murkov
 
-markov chain discord bot in rust + serenity + postgres
+markov chain discord bot with serenity + postgres 
 
 example `.env` file in project root directory:
 
@@ -13,3 +13,5 @@ DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${HOST}:${PORT}/${
 BOT_TOKEN=
 RUST_LOG=murkov=debug
 ```
+
+## [prod ready docker-compose.yml](docker-prod-file/docker-compose.yml)
