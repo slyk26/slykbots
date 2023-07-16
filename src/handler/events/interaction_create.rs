@@ -1,20 +1,21 @@
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
 use serenity::prelude::*;
-use sqlx::{Pool, Postgres};
-use crate::commands::COMMANDS;
+use crate::util::{COMMANDS, DB};
 use crate::handler::interactions::application_command;
 
-pub async fn call(ctx: &Context, interaction: &Interaction, database: &Pool<Postgres>) {
+pub async fn call(ctx: &Context, interaction: &Interaction, commands: &COMMANDS, database: &DB) {
     if interaction.guild_locale().is_some() {
         match interaction {
 
             // regular response (text) => returns the result of the called SlashCommand
             Interaction::ApplicationCommand(interaction) => {
-                let cmd = COMMANDS.get(interaction.data.name.as_str()).expect("No Command found in command map");
-                application_command::call(ctx, interaction, cmd.as_ref(), database).await;
+                match commands.get(interaction.data.name.as_str()) {
+                    Some(cmd) => application_command::call(ctx, interaction, cmd.as_ref(), database).await,
+                    None => error!("invalid command issued: {:?}", interaction.data)
+                }
             }
 
-            _ => { warn!("unknown interaction type") }
+            _ => { warn!("unsupported interaction type: {:?}", interaction.kind()) }
         }
     } else {
         match interaction {
@@ -27,7 +28,7 @@ pub async fn call(ctx: &Context, interaction: &Interaction, database: &Pool<Post
                     }).await;
             }
 
-            _ => { warn!("unknown interaction type") }
+            _ => { warn!("unsupported interaction type: {:?}", interaction.kind()) }
         }
     }
 }

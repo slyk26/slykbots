@@ -1,16 +1,17 @@
 [package]
 name = "murkov"
-version = "0.1.4"
+version = "0.2.0"
 edition = "2021"
+resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sqlx = { version = "0.7.0-alpha.3", features = [ "runtime-tokio-rustls", "postgres", "macros"] }
+sqlx = { version = "0.6.3", features = [ "runtime-tokio-rustls", "postgres", "macros"] }
 tokio = { version = "1.28.2", features = [ "rt-multi-thread" ] }
-dotenv = "0.15.0"
-serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-lazy_static = "1.4.0"
+serenity = "*"
 log = "0.4.18"
 pretty_env_logger = "0.5.0"
 rand = "0.8.5"
+
+songbird = {version = "0.3.2", features = ["yt-dlp", "builtin-queue"]}

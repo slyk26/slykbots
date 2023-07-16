@@ -2,14 +2,13 @@ use std::time::Duration;
 use serenity::model::application::command::Command;
 use serenity::model::gateway::{Activity, Ready};
 use serenity::prelude::*;
-use sqlx::{Pool, Postgres};
 use tokio::time::interval;
-use crate::commands::COMMANDS;
+use crate::util::COMMANDS;
 
-pub async fn call(ctx: &Context, ready: &Ready, _db: &Pool<Postgres>) {
+pub async fn call(ctx: &Context, ready: &Ready, commands: &COMMANDS) {
     info!("{} is online!", ready.user.name);
 
-    register_commands(ctx).await;
+    register_commands(ctx, commands).await;
     status_update_thread(ctx.clone());
 }
 
@@ -25,8 +24,8 @@ fn status_update_thread(ctx_for_thread: Context) {
     });
 }
 
-async fn register_commands(ctx: &Context) {
-    for cmd in COMMANDS.iter() {
+async fn register_commands(ctx: &Context, commands: &COMMANDS) {
+    for cmd in commands.iter() {
         let result = Command::create_global_application_command(&ctx.http, |command| {
             cmd.1.register(command)
         }).await;
