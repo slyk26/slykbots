@@ -1,15 +1,18 @@
+use std::ops::Add;
+use std::time::Duration;
 use serenity::framework::standard::{Args, CommandResult};
 use serenity::framework::standard::macros::{command, group};
 use serenity::model::prelude::Message;
 use serenity::prelude::{Context, Mentionable};
 use serenity::utils::Color;
 use songbird::{Event, TrackEvent};
-use songbird::input::Restartable;
-use crate::util::check_msg;
-use crate::voice::track_end::TrackEndNotifier;
+use songbird::input::{Metadata, Restartable};
+use crate::util::{check_msg, LEGACY_CMD};
+use crate::voice::afk_auto_leave::AfkAutoLeave;
+use crate::voice::track_info::TrackInfoNotifier;
 
 #[group]
-#[commands(join,leave,play,skip, list)]
+#[commands(join, leave, play, skip, list, stop)]
 struct General;
 
 #[command]
@@ -29,7 +32,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
             check_msg(msg.reply(ctx, "move ur ass to a vc first :LULA:").await);
 
             return Ok(());
-        },
+        }
     };
 
     let manager = songbird::get(ctx)
@@ -53,13 +56,20 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
         let mut handle = handle_lock.lock().await;
 
         handle.add_global_event(
-            Event::Track(TrackEvent::End),
-            TrackEndNotifier {
+            Event::Track(TrackEvent::Play),
+            TrackInfoNotifier {
                 chan_id,
-                http: send_http,
+                http: send_http.clone(),
             },
         );
 
+        handle.add_global_event(
+            Event::Periodic(Duration::from_secs(300), None),
+            AfkAutoLeave {
+                guild_id,
+                manager: manager.clone()
+            },
+        )
     } else {
         check_msg(
             msg.channel_id
@@ -113,7 +123,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             );
 
             return Ok(());
-        },
+        }
     };
 
     if !url.starts_with("http") {
@@ -145,7 +155,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 error!("Err starting source: {:?}", why);
                 check_msg(msg.channel_id.say(&ctx.http, "Error sourcing ffmpeg").await);
                 return Ok(());
-            },
+            }
         };
 
         debug!("{:?}", source);
@@ -156,7 +166,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             msg.channel_id
                 .say(
                     &ctx.http,
-                    format!("Added song to queue: position {}", handler.queue().len()),
+                    format!("Added song to queue: `{}`", handler.queue().current().unwrap().metadata().title.clone().unwrap_or(String::new())),
                 )
                 .await,
         );
@@ -191,7 +201,7 @@ async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
             msg.channel_id
                 .say(
                     &ctx.http,
-                    format!("Song skipped: {} in queue.", queue.len()),
+                    format!("Song skipped: {} in queue.", queue.len() - 1),
                 )
                 .await,
         );
@@ -237,16 +247,50 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 #[command]
 #[only_in(guilds)]
 async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+    let guild = msg.guild(&ctx.cache).unwrap();
+    let guild_id = guild.id;
+
     let manager = songbird::get(ctx)
         .await
         .expect("Songbird Voice client placed in at initialisation.")
         .clone();
 
-    msg.channel_id.send_message(&ctx.http, |m| {
-       m.embed(|e| {
-           let f = e.colour(Color::from_rgb(255,0,0))
-       })
-    }).await;
+    if let Some(handler_lock) = manager.get(guild_id) {
+        let handler = handler_lock.lock().await;
+        let queue = handler.queue().current_queue();
+
+        debug!("{:?}", queue);
+
+        let _ = msg.channel_id.send_message(&ctx.http, |m| {
+            m.embed(|e| {
+                let embed = e.colour(Color::from_rgb(255, 0, 0)).title("Current Bangers");
+
+                if let Some(current) = queue.first() {
+                    let uuid = current.uuid();
+                    for track in queue {
+                        let (name, value) = format_track(track.uuid().eq(&uuid), track.metadata());
+                        embed.field(name, value, false);
+                    }
+                } else {
+                    embed.field("No songs in queue", format!("add some with {}play `url` !", LEGACY_CMD), false);
+                }
+
+                embed
+            })
+        }).await;
+    }
 
     Ok(())
+}
+
+fn format_track(first: bool, m: &Metadata) -> (String, String) {
+    let mut top = String::new();
+    if first {
+        top = String::from("👉 ");
+    }
+    top = top.add(m.title.clone().unwrap_or(String::new()).as_str());
+    let bottom =
+        format!("by {}", m.artist.clone().unwrap());
+
+    (top, bottom)
 }

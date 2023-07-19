@@ -8,18 +8,19 @@ use crate::util::check_msg;
 use songbird::EventHandler;
 use EventHandler as VoiceEventHandler;
 
-pub struct TrackEndNotifier {
+pub struct TrackInfoNotifier {
     pub chan_id: ChannelId,
     pub http: Arc<Http>,
 }
 
 #[async_trait]
-impl VoiceEventHandler for TrackEndNotifier {
+impl VoiceEventHandler for TrackInfoNotifier {
     async fn act(&self, ctx: &EventContext<'_>) -> Option<Event> {
         if let EventContext::Track(track_list) = ctx {
+            let (_, handle) = track_list.first().unwrap();
             check_msg(
                 self.chan_id
-                    .say(&self.http, &format!("Tracks ended: {}.", track_list.len()))
+                    .say(&self.http, &format!("🎵 Now playing: {}", handle.metadata().title.clone().unwrap()))
                     .await,
             );
         }

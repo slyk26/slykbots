@@ -38,9 +38,9 @@ async fn main() {
 
     // create bot
     let mut bot = Client::builder(token.clone(),
-                              GatewayIntents::MESSAGE_CONTENT |
-                                  GatewayIntents::GUILD_MESSAGES |
-                                  GatewayIntents::GUILDS | GatewayIntents::GUILD_VOICE_STATES)
+                                  GatewayIntents::MESSAGE_CONTENT |
+                                      GatewayIntents::GUILD_MESSAGES |
+                                      GatewayIntents::GUILDS | GatewayIntents::GUILD_VOICE_STATES)
         .event_handler(EventHandler::init(pool))
         .framework(framework)
         .register_songbird()
