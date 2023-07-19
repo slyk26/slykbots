@@ -5,9 +5,9 @@ use serenity::model::application::interaction::application_command::ApplicationC
 use serenity::model::application::interaction::InteractionResponseType;
 use serenity::prelude::SerenityError;
 use serenity::utils::Color;
-use sqlx::{Pool, Postgres};
 use crate::commands::slash_command::SlashCommand;
 use crate::markov_chains::MarkovService;
+use crate::util::DB;
 
 pub struct Stats;
 
@@ -21,18 +21,21 @@ impl SlashCommand for Stats {
         "shows stats about this server".to_string()
     }
 
-    async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction, database: &Pool<Postgres>) -> Result<(), SerenityError> {
+    async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction, database: &DB) -> Result<(), SerenityError> {
         let mut embed = CreateEmbed::default();
         let guild_str = command.guild_id.unwrap().to_string();
+        let enough = MarkovService::get_max(database, &guild_str).await > 1000;
         let (entries, used) = MarkovService::get_stats(database, &guild_str).await;
 
         embed.title("Stats")
             .colour(Color::from_rgb(255, 255, 255))
-            .field(format!("learned {} Markov entries here", entries), "", false)
-            .field(format!("learned enough words to talk: {}", MarkovService::get_max(database, &guild_str).await > 1000), "", false)
-            .field(format!("active in {} servers", used), "", false)
-            .field("made by: slyk26", "", false)
-            .field(format!("version: {}", env!("CARGO_PKG_VERSION")), "", false);
+            .field("Markov entries", entries, false)
+            .field("can talk yet?", format!("{}", enough), false)
+            .field("active servers", used, false)
+            .field("========================", "", false)
+            .footer(|f| {
+                f.text(format!("by slyk26 \t\t\t\t v.{}", env!("CARGO_PKG_VERSION")))
+            });
 
         command
             .create_interaction_response(&ctx.http, |response| {

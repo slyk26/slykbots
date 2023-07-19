@@ -1,13 +1,14 @@
-use sqlx::{Postgres, Pool, Error, query, Row, query_as};
+use sqlx::{Error, query, Row, query_as};
 use rand::{Rng, thread_rng};
 use serenity::model::prelude::Message;
 use serenity::prelude::Context;
 use crate::markov_chains::markov_model::MarkovModel;
+use crate::util::DB;
 
 pub struct MarkovService;
 
 impl MarkovService {
-    async fn store(db: &Pool<Postgres>, part: MarkovModel) {
+    async fn store(db: &DB, part: MarkovModel) {
         if let Some(id) = MarkovService::check_if_exists(db, &part).await {
             if let Some(freq) = MarkovService::get_frequency(db, id).await {
                 let _ = MarkovService::update(db, id, freq + 1).await;
@@ -17,7 +18,7 @@ impl MarkovService {
         }
     }
 
-    async fn insert(db: &Pool<Postgres>, part: &MarkovModel) -> Result<i32, Error> {
+    async fn insert(db: &DB, part: &MarkovModel) -> Result<i32, Error> {
         debug!("inserting words '{}' - '{:?}'", part.current_word, part.next_word);
 
         match query("insert into markov_data \
@@ -33,7 +34,7 @@ impl MarkovService {
         }
     }
 
-    async fn update(db: &Pool<Postgres>, id: i32, freq: i32) -> Result<(), Error> {
+    async fn update(db: &DB, id: i32, freq: i32) -> Result<(), Error> {
         debug!("updating id {} - new freq {}", id, freq);
 
         match query("update markov_data set frequency = $1 where id = $2")
@@ -45,7 +46,7 @@ impl MarkovService {
         }
     }
 
-    async fn check_if_exists(db: &Pool<Postgres>, part: &MarkovModel) -> Option<i32> {
+    async fn check_if_exists(db: &DB, part: &MarkovModel) -> Option<i32> {
         match query("select id from markov_data where current_word = $1 and next_word = $2 and guild_id = $3")
             .bind(&part.current_word)
             .bind(&part.next_word)
@@ -61,7 +62,7 @@ impl MarkovService {
         }
     }
 
-    async fn get_frequency(db: &Pool<Postgres>, id: i32) -> Option<i32> {
+    async fn get_frequency(db: &DB, id: i32) -> Option<i32> {
         match query("select frequency from markov_data where id = $1")
             .bind(id)
             .fetch_optional(db).await {
@@ -75,7 +76,7 @@ impl MarkovService {
         }
     }
 
-    pub async fn get_max(db: &Pool<Postgres>, guild_id: &String) -> i64 {
+    pub async fn get_max(db: &DB, guild_id: &String) -> i64 {
         match query("select count(*) from markov_data where guild_id = $1")
             .bind(guild_id)
             .fetch_one(db).await {
@@ -87,13 +88,13 @@ impl MarkovService {
         }
     }
 
-    async fn get_start_model(db: &Pool<Postgres>, guild_id: &String) -> Result<MarkovModel, Error> {
+    async fn get_start_model(db: &DB, guild_id: &String) -> Result<MarkovModel, Error> {
         query_as("select * from markov_data where guild_id = $1 order by random() limit 1")
             .bind(guild_id)
             .fetch_one(db).await
     }
 
-    async fn generate_message(db: &Pool<Postgres>, guild_id: String) -> String {
+    async fn generate_message(db: &DB, guild_id: String) -> String {
         let max = MarkovService::get_max(db, &guild_id).await;
         debug!("generating message with {} entries", max);
         let mut msg = String::new();
@@ -123,7 +124,7 @@ impl MarkovService {
         msg
     }
 
-    async fn get_next(db: &Pool<Postgres>, current_word: String, from_guild: String) -> MarkovModel {
+    async fn get_next(db: &DB, current_word: String, from_guild: String) -> MarkovModel {
         if let Ok(possibilities) =
             query_as::<_, MarkovModel>("select * from markov_data where current_word = $1 and guild_id = $2")
                 .bind(current_word)
@@ -143,7 +144,7 @@ impl MarkovService {
         }
     }
 
-    pub async fn send_message(ctx: &Context, msg: &Message, db: &Pool<Postgres>) {
+    pub async fn send_message(ctx: &Context, msg: &Message, db: &DB) {
         if !msg.author.bot {
             let message = MarkovService::generate_message(db, msg.guild_id.unwrap().to_string()).await;
             let _ = msg.channel_id.send_message(&ctx.http, |m| {
@@ -152,7 +153,7 @@ impl MarkovService {
         }
     }
 
-    pub async fn destruct_message(msg: &Message, db: &Pool<Postgres>) {
+    pub async fn destruct_message(msg: &Message, db: &DB) {
         if !msg.author.bot {
             let words = msg.content.split(' ').collect::<Vec<&str>>();
 
@@ -173,7 +174,7 @@ impl MarkovService {
         }
     }
 
-    pub async fn get_stats(db: &Pool<Postgres>, guild_id: &String) -> (i64, i64) {
+    pub async fn get_stats(db: &DB, guild_id: &String) -> (i64, i64) {
         let mut entries = -1;
         let mut used = -1;
 
