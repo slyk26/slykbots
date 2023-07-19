@@ -1,6 +1,6 @@
 FROM rust:latest AS builder
 RUN update-ca-certificates
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
+RUN apt-get update && apt-get -y install cmake protobuf-compiler
 
 # Create appuser
 ENV USER=murkov
@@ -19,7 +19,7 @@ WORKDIR /murkov
 
 COPY ./ .
 
-RUN cargo +nightly build --release -Z sparse-registry
+RUN cargo build --release
 
 FROM gcr.io/distroless/cc
 
