@@ -1,5 +1,6 @@
 FROM rust:latest AS builder
 RUN update-ca-certificates
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
 
 # Create appuser
 ENV USER=murkov
@@ -18,7 +19,7 @@ WORKDIR /murkov
 
 COPY ./ .
 
-RUN cargo build --release
+RUN cargo +nightly build --release -Z sparse-registry
 
 FROM gcr.io/distroless/cc
 
