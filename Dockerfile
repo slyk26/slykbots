@@ -23,8 +23,9 @@ RUN cargo build --release
 
 FROM gcr.io/distroless/cc
 
-RUN add-apt-repository --yes ppa:tomtomtom/yt-dlp
-RUN apt-get update && apt-get -y install cmake protobuf-compiler essential autoconf automake libtool m4 ffmpeg yt-dlp
+RUN apt-get update && apt-get -y install cmake protobuf-compiler essential autoconf automake libtool m4 ffmpeg
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+RUN chmod a+rx /usr/local/bin/yt-dlp
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
