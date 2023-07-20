@@ -22,11 +22,11 @@ RUN cargo build --release
 
 FROM ubuntu:20.04
 
-RUN apt install libopus-dev
+RUN apt install -y libopus-dev
 RUN apt -y install cmake protobuf-compiler essential autoconf automake libtool m4 ffmpeg
 RUN add-apt-repository --yes ppa:tomtomtom/yt-dlp
 RUN apt update
-RUN apt install yt-dlp
+RUN apt install -y yt-dlp
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
