@@ -21,7 +21,7 @@ COPY ./ .
 
 RUN cargo build --release
 
-FROM gcr.io/distroless/cc
+FROM ubuntu:20.04
 
 RUN apt-get update && apt-get -y install cmake protobuf-compiler essential autoconf automake libtool m4 ffmpeg
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
