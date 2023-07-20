@@ -26,7 +26,7 @@ RUN apt-get update
 RUN apt-get -y install libopus-dev
 RUN apt-get -y install cmake
 RUN apt-get -y install protobuf-compiler
-RUN apt-get -y install essential
+RUN apt-get -y install build-essential
 RUN apt-get -y install autoconf automake
 RUN apt-get -y install libtool m4 ffmpeg
 RUN add-apt-repository --yes ppa:tomtomtom/yt-dlp
