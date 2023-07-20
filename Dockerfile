@@ -22,9 +22,13 @@ RUN cargo build --release
 
 FROM ubuntu:latest
 
-RUN apt update
+RUN apt-get update
 RUN apt-get -y install libopus-dev
-RUN apt-get -y install cmake protobuf-compiler essential autoconf automake libtool m4 ffmpeg
+RUN apt-get -y install cmake
+RUN apt-get -y install protobuf-compiler
+RUN apt-get -y install essential
+RUN apt-get -y install autoconf automake
+RUN apt-get -y install libtool m4 ffmpeg
 RUN add-apt-repository --yes ppa:tomtomtom/yt-dlp
 RUN apt-get update
 RUN apt-get -y install yt-dlp
