@@ -28,7 +28,7 @@ RUN apt-get -y install cmake
 RUN apt-get -y install protobuf-compiler
 RUN apt-get -y install build-essential
 RUN apt-get -y install autoconf automake
-RUN apt-get -y install libtool m4 ffmpeg
+RUN apt-get -y install libtool m4 ffmpeg curl
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 RUN chmod a+rx /usr/local/bin/yt-dlp
 
