@@ -9,7 +9,7 @@ use crate::handler::events::ready;
 use crate::handler::events::interaction_create;
 use crate::handler::events::message;
 use crate::handler::events::voice_state_update;
-use crate::util::{COMMANDS, DB};
+use crate::types::{COMMANDS, DB};
 
 pub struct EventHandler {
     pub database: DB,

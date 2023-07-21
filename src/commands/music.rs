@@ -6,7 +6,8 @@ use serenity::model::prelude::InteractionResponseType;
 use serenity::prelude::SerenityError;
 use serenity::utils::Color;
 use crate::commands::SlashCommand;
-use crate::util::{DB, LEGACY_CMD};
+use crate::types::DB;
+use crate::voice::voice_utils::LEGACY_CMD;
 
 pub struct Music;
 
@@ -22,15 +23,14 @@ impl SlashCommand for Music {
 
     async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction, _database: &DB) -> Result<(), SerenityError> {
         let mut embed = CreateEmbed::default();
-        embed.title("Youtube :pagman:")
+        embed.title("Youtube Player")
             .colour(Color::from_rgb(255, 0, 0))
             .field(format!("{}join", LEGACY_CMD), "joins the vc\n(you have to be in a vc first)", false)
-            .field(format!("{}play `URL`", LEGACY_CMD), "play a YT Url", false)
+            .field(format!("{}play", LEGACY_CMD), "play a url or use words to search", false)
             .field(format!("{}stop", LEGACY_CMD), "clears queue", false)
             .field(format!("{}leave", LEGACY_CMD), "removes bot from vc\n(also clears queue)", false)
             .field(format!("{}skip", LEGACY_CMD), "skip the current song", false)
             .field(format!("{}list", LEGACY_CMD), "show the queue", false)
-            .field("========================", "", false)
             .footer(|f| {
                 f.text(format!("by slyk26 \t\t\t\t v.{}", env!("CARGO_PKG_VERSION")))
             });

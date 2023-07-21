@@ -2,12 +2,7 @@ FROM rust:latest AS builder
 RUN update-ca-certificates
 
 RUN apt-get update
-RUN apt-get -y install libopus-dev
-RUN apt-get -y install cmake
-RUN apt-get -y install protobuf-compiler
-RUN apt-get -y install build-essential
-RUN apt-get -y install autoconf automake
-RUN apt-get -y install libtool m4 ffmpeg curl
+RUN apt-get -y install libopus-dev cmake protobuf-compiler build-essential autoconf automake libtool m4 ffmpeg curl python3
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 RUN chmod a+rx /usr/local/bin/yt-dlp
 
@@ -33,12 +28,7 @@ RUN cargo build --release
 FROM ubuntu:latest
 
 RUN apt-get update
-RUN apt-get -y install libopus-dev
-RUN apt-get -y install cmake
-RUN apt-get -y install protobuf-compiler
-RUN apt-get -y install build-essential
-RUN apt-get -y install autoconf automake
-RUN apt-get -y install libtool m4 ffmpeg curl
+RUN apt-get -y install libopus-dev cmake protobuf-compiler build-essential autoconf automake libtool m4 ffmpeg curl python3
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 RUN chmod a+rx /usr/local/bin/yt-dlp
 
@@ -53,4 +43,4 @@ COPY --from=builder /murkov/target/release/murkov ./
 # Use an unprivileged user.
 USER murkov:murkov
 
-CMD sh
+CMD bash

@@ -7,7 +7,7 @@ use serenity::prelude::SerenityError;
 use serenity::utils::Color;
 use crate::commands::slash_command::SlashCommand;
 use crate::markov_chains::MarkovService;
-use crate::util::DB;
+use crate::types::DB;
 
 pub struct Stats;
 

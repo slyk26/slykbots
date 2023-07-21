@@ -1,6 +1,6 @@
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
 use serenity::prelude::*;
-use crate::util::{COMMANDS, DB};
+use crate::types::{COMMANDS, DB};
 use crate::handler::interactions::application_command;
 
 pub async fn call(ctx: &Context, interaction: &Interaction, commands: &COMMANDS, database: &DB) {

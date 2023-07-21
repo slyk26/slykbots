@@ -14,14 +14,11 @@ pub struct AfkAutoLeave {
 #[async_trait]
 impl VoiceEventHandler for AfkAutoLeave {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<Event> {
-        match self.manager.get(self.guild_id) {
-            None => {}
-            Some(handler_lock) => {
-                let mut handler = handler_lock.lock().await;
-                debug!("{:?}", handler.queue().current_queue());
-                if handler.queue().current_queue().is_empty() {
-                    let _dc = handler.leave().await;
-                }
+        if let Some(handler_lock) = self.manager.get(self.guild_id) {
+            let mut handler = handler_lock.lock().await;
+            debug!("{:?}", handler.queue().current_queue());
+            if handler.queue().current_queue().is_empty() {
+                let _dc = handler.leave().await;
             }
         };
         None
