@@ -14,12 +14,18 @@ pub async fn call(ctx: &Context, ready: &Ready, commands: &COMMANDS) {
 
 fn status_update_thread(ctx_for_thread: Context) {
     tokio::spawn(async move {
-        let mut interval = interval(Duration::from_secs(60));
+        let mut interval = interval(Duration::from_secs(25));
         loop {
             interval.tick().await;
             ctx_for_thread.set_activity(Activity::watching("forsen")).await;
             interval.tick().await;
-            ctx_for_thread.set_activity(Activity::watching("/stats")).await;
+            ctx_for_thread.set_activity(Activity::listening("/stats")).await;
+            interval.tick().await;
+            ctx_for_thread.set_activity(Activity::listening("/music")).await;
+            interval.tick().await;
+            ctx_for_thread.set_activity(Activity::playing("yet another godseed")).await;
+            interval.tick().await;
+            ctx_for_thread.set_activity(Activity::listening("yt songs")).await;
         }
     });
 }

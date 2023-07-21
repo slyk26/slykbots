@@ -11,6 +11,9 @@ async fn leave_when_alone(ctx: Context, old: Option<VoiceState>, new: VoiceState
     let last_user_id;
     let manager = get_manager(&ctx).await;
 
+    debug!("{:?}", old);
+    debug!("{:?}", new);
+
     if old.is_some() {
         last_user_id = old.unwrap().user_id;
     } else {

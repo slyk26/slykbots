@@ -24,6 +24,8 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
     let chan_id = msg.channel_id;
     let manager = get_manager(ctx).await;
 
+    let was_in_vc = manager.get(guild_id).is_some();
+
     let channel_id = guild
         .voice_states
         .get(&msg.author.id)
@@ -43,8 +45,10 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
         let send_http = ctx.http.clone();
         let mut handle = handle_lock.lock().await;
 
-        handle.add_global_event(Event::Track(TrackEvent::Play), TrackInfoNotifier { chan_id, http: send_http.clone() });
-        handle.add_global_event(Event::Periodic(Duration::from_secs(300), None), AfkAutoLeave { guild_id, manager: manager.clone() });
+        if !was_in_vc {
+            handle.add_global_event(Event::Track(TrackEvent::Play), TrackInfoNotifier { chan_id, http: send_http.clone() });
+            handle.add_global_event(Event::Periodic(Duration::from_secs(300), None), AfkAutoLeave { guild_id, manager: manager.clone() });
+        }
         say(chan_id, &ctx.http, format!("{} 👀", connect_to.mention())).await;
     } else {
         say(chan_id, &ctx.http, format!("MODS why can't I join {}? angrE", connect_to.mention())).await;
