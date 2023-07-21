@@ -1,8 +1,9 @@
+use std::collections::HashMap;
 use std::ops::AddAssign;
 use std::time::Duration;
 use serenity::framework::standard::{Args, CommandResult};
 use serenity::framework::standard::macros::{command, group};
-use serenity::model::prelude::Message;
+use serenity::model::prelude::{Message, UserId, VoiceState};
 use serenity::prelude::{Context, Mentionable};
 use serenity::utils::Color;
 use songbird::{Event, TrackEvent};
@@ -34,7 +35,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            reply(msg, &ctx.http, "move ur ass to a vc first :LULA:").await;
+            reply(msg, &ctx.http, "move ur ass to a vc first LULE").await;
             return Ok(());
         }
     };
@@ -84,38 +85,45 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let chan_id = msg.channel_id;
     let manager = get_manager(&ctx).await;
 
-    if let Some(handler_lock) = manager.get(guild_id) {
-        let url = match args.single::<String>() {
-            Ok(url) => url,
-            Err(_) => {
-                say(msg.channel_id, &ctx.http, "buckeroo give me a link or words to search").await;
-                return Ok(());
+    debug!("{:?}", guild.voice_states);
+
+    if is_in_vc(guild.voice_states, msg.author.id, ctx.http.get_current_user().await.unwrap().id) {
+        if let Some(handler_lock) = manager.get(guild_id) {
+            let url = match args.single::<String>() {
+                Ok(url) => url,
+                Err(_) => {
+                    say(msg.channel_id, &ctx.http, "buckeroo give me a link or words to search").await;
+                    return Ok(());
+                }
+            };
+
+            let mut handler = handler_lock.lock().await;
+            let source: Option<Restartable>;
+
+            if let Ok(_) = Url::parse(&*url) {
+                source = url_source(url).await;
+            } else {
+                source = word_source(args.rewind()).await;
             }
-        };
 
-        let mut handler = handler_lock.lock().await;
-        let source: Option<Restartable>;
+            if source.is_none() {
+                say(chan_id, &ctx.http, "watafak I failed using youtube").await;
+                return Ok(());
+            };
 
-        if let Ok(_) = Url::parse(&*url) {
-            source = url_source(url).await;
+            debug!("{:?}", source);
+            handler.enqueue_source(source.unwrap().into());
+            debug!("{:?}", handler.queue().current_queue().first().unwrap().get_info().await);
+
+            reply(msg, &ctx.http,
+                  format!("Added song to queue: `{}`", handler.queue().current_queue().last().unwrap().metadata().title.clone().unwrap_or(String::new()))).await;
         } else {
-            source = word_source(args.rewind()).await;
+            reply(msg, &ctx.http, "let me lurk in peace madgE").await;
         }
-
-        if source.is_none() {
-            say(chan_id, &ctx.http, "watafak I failed using youtube").await;
-            return Ok(());
-        };
-
-        debug!("{:?}", source);
-        handler.enqueue_source(source.unwrap().into());
-        debug!("{:?}", handler.queue().current_queue().first().unwrap().get_info().await);
-
-        reply(msg, &ctx.http,
-              format!("Added song to queue: `{}`", handler.queue().current_queue().last().unwrap().metadata().title.clone().unwrap_or(String::new()))).await;
     } else {
-        reply(msg, &ctx.http, "let me lurk in peace madgE").await;
+        reply(msg, &ctx.http, "come to my channel first flushge").await;
     }
+
     Ok(())
 }
 
@@ -233,4 +241,11 @@ async fn word_source(args: &mut Args) -> Option<Restartable> {
             None
         }
     }
+}
+
+fn is_in_vc(voice_states: HashMap<UserId, VoiceState>, user: UserId, bot: UserId) -> bool {
+    if voice_states.contains_key(&user) && voice_states.contains_key(&bot) {
+        return voice_states.get(& user).unwrap().channel_id.unwrap() == voice_states.get(&bot).unwrap().channel_id.unwrap()
+    }
+    false
 }
