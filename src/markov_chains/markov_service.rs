@@ -3,7 +3,7 @@ use rand::{Rng, thread_rng};
 use serenity::model::prelude::Message;
 use serenity::prelude::Context;
 use crate::markov_chains::markov_model::MarkovModel;
-use crate::util::DB;
+use crate::types::DB;
 
 pub struct MarkovService;
 

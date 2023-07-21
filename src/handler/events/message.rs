@@ -4,7 +4,8 @@ use serenity::http::Http;
 use serenity::model::prelude::Message;
 use serenity::prelude::Context;
 use crate::markov_chains::MarkovService;
-use crate::util::{DB, LEGACY_CMD};
+use crate::types::DB;
+use crate::voice::voice_utils::LEGACY_CMD;
 
 pub async fn call(ctx: &Context, new_message: Message, db: &DB) {
     let cache = ctx.http.clone();

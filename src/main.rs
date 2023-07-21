@@ -2,7 +2,7 @@ mod commands;
 mod handler;
 mod markov_chains;
 mod voice;
-mod util;
+mod types;
 
 #[macro_use]
 extern crate log;
@@ -14,7 +14,7 @@ use sqlx::postgres::PgPoolOptions;
 use songbird::SerenityInit;
 use crate::handler::EventHandler;
 use serenity::framework::StandardFramework;
-use crate::util::LEGACY_CMD;
+use voice::voice_utils::LEGACY_CMD;
 use crate::voice::GENERAL_GROUP;
 
 #[tokio::main]
