@@ -52,3 +52,5 @@ COPY --from=builder /murkov/target/release/murkov ./
 
 # Use an unprivileged user.
 USER murkov:murkov
+
+CMD sh
