@@ -121,7 +121,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             reply(msg, &ctx.http, "let me lurk in peace madgE").await;
         }
     } else {
-        reply(msg, &ctx.http, "come to my channel first flushge").await;
+        reply(msg, &ctx.http, "join vc first LULE").await;
     }
 
     Ok(())
