@@ -11,11 +11,12 @@ use songbird::input::{Metadata, Restartable};
 use url::Url;
 use crate::voice::afk_auto_leave::AfkAutoLeave;
 use crate::voice::track_info::TrackInfoNotifier;
-use crate::voice::voice_utils::{get_manager, LEGACY_CMD, reply, say};
+use crate::utils::{get_manager, reply, say};
+use crate::LEGACY_CMD;
 
 #[group]
 #[commands(join, leave, play, skip, list, stop)]
-struct General;
+struct Voice;
 
 #[command]
 #[only_in(guilds)]
@@ -42,7 +43,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 
     let (handle_lock, success) = manager.join(guild_id, connect_to).await;
 
-    if let Ok(_) = success {
+    if success.is_ok() {
         let send_http = ctx.http.clone();
         let mut handle = handle_lock.lock().await;
 

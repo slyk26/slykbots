@@ -7,7 +7,7 @@ use serenity::prelude::SerenityError;
 use serenity::utils::Color;
 use crate::commands::SlashCommand;
 use crate::types::DB;
-use crate::voice::voice_utils::LEGACY_CMD;
+use crate::LEGACY_CMD;
 
 pub struct Music;
 

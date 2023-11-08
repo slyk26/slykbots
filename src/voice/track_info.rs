@@ -6,7 +6,7 @@ use songbird::EventContext;
 use songbird::Event;
 use songbird::EventHandler;
 use EventHandler as VoiceEventHandler;
-use crate::voice::voice_utils::say;
+use crate::utils::say;
 
 pub struct TrackInfoNotifier {
     pub chan_id: ChannelId,

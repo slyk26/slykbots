@@ -3,6 +3,8 @@ mod handler;
 mod markov_chains;
 mod voice;
 mod types;
+mod ai;
+pub mod utils;
 
 #[macro_use]
 extern crate log;
@@ -14,8 +16,10 @@ use sqlx::postgres::PgPoolOptions;
 use songbird::SerenityInit;
 use crate::handler::EventHandler;
 use serenity::framework::StandardFramework;
-use voice::voice_utils::LEGACY_CMD;
-use crate::voice::GENERAL_GROUP;
+use crate::ai::AI_GROUP;
+use crate::voice::VOICE_GROUP;
+
+pub const LEGACY_CMD: &str = ">";
 
 #[tokio::main]
 async fn main() {
@@ -34,7 +38,8 @@ async fn main() {
     let framework = StandardFramework::new()
         .configure(|c| c
             .prefix(LEGACY_CMD))
-        .group(&GENERAL_GROUP);
+        .group(&VOICE_GROUP)
+        .group(&AI_GROUP);
 
     // create bot
     let mut bot = Client::builder(token.clone(),
