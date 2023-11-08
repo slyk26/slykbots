@@ -10,12 +10,12 @@ use crate::LEGACY_CMD;
 pub async fn call(ctx: &Context, new_message: Message, db: &DB) {
     let cache = ctx.http.clone();
 
-    if !mentions_bot(&cache, &new_message).await && !is_legacy_command(&new_message) {
+    if !mentions_bot(&cache, &new_message).await && !is_legacy_command(&new_message) && !new_message.is_private() {
         MarkovService::destruct_message(&new_message, db).await;
     }
 
     // 7% chance after msg or always on @mention
-    if thread_rng().gen_range(0..100) < 7 || mentions_bot(&cache, &new_message).await {
+    if (thread_rng().gen_range(0..100) < 7 || mentions_bot(&cache, &new_message).await) && !new_message.is_private() {
         MarkovService::send_message(ctx, &new_message, db).await;
     }
 }

@@ -17,7 +17,7 @@ pub async fn reply(d_message: &Message, http: impl CacheHttp, msg: impl Display)
     }
 }
 
-pub async fn get_manager(ctx: &Context) -> Arc<Songbird> {
+pub async fn get_voicemanager(ctx: &Context) -> Arc<Songbird> {
     match songbird::get(ctx).await {
         Some(birb) => birb.clone(),
         None => panic!("Songbird is not registered")

@@ -16,7 +16,7 @@ use sqlx::postgres::PgPoolOptions;
 use songbird::SerenityInit;
 use crate::handler::EventHandler;
 use serenity::framework::StandardFramework;
-use crate::ai::AI_GROUP;
+use crate::ai::{AI_GROUP, dm_chatting};
 use crate::voice::VOICE_GROUP;
 
 pub const LEGACY_CMD: &str = ">";
@@ -39,12 +39,14 @@ async fn main() {
         .configure(|c| c
             .prefix(LEGACY_CMD))
         .group(&VOICE_GROUP)
-        .group(&AI_GROUP);
+        .group(&AI_GROUP)
+        .normal_message(dm_chatting);
 
     // create bot
     let mut bot = Client::builder(token.clone(),
                                   GatewayIntents::MESSAGE_CONTENT |
                                       GatewayIntents::GUILD_MESSAGES |
+                                      GatewayIntents::DIRECT_MESSAGES |
                                       GatewayIntents::GUILDS | GatewayIntents::GUILD_VOICE_STATES)
         .event_handler(EventHandler::init(pool))
         .framework(framework)

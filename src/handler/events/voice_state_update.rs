@@ -1,6 +1,6 @@
 use serenity::model::prelude::VoiceState;
 use serenity::prelude::Context;
-use crate::utils::get_manager;
+use crate::utils::get_voicemanager;
 
 pub async fn call(ctx: Context, old: Option<VoiceState>, new: VoiceState) {
     leave_when_alone(ctx, old ,new).await;
@@ -9,7 +9,7 @@ pub async fn call(ctx: Context, old: Option<VoiceState>, new: VoiceState) {
 async fn leave_when_alone(ctx: Context, old: Option<VoiceState>, new: VoiceState) {
     let bot_id = ctx.http.get_current_user().await.unwrap().id;
     let last_user_id;
-    let manager = get_manager(&ctx).await;
+    let manager = get_voicemanager(&ctx).await;
 
     debug!("{:?}", old);
     debug!("{:?}", new);

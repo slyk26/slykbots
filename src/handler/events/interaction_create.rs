@@ -24,7 +24,7 @@ pub async fn call(ctx: &Context, interaction: &Interaction, commands: &COMMANDS,
                     .create_interaction_response(&ctx.http, |response| {
                         response
                             .kind(InteractionResponseType::ChannelMessageWithSource)
-                            .interaction_response_data(|message| message.content("The bot only works in a Server"))
+                            .interaction_response_data(|message| message.content("Slash commands only work in a server"))
                     }).await;
             }
 
