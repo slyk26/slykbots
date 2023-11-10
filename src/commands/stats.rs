@@ -7,7 +7,6 @@ use serenity::prelude::SerenityError;
 use serenity::utils::Color;
 use crate::commands::slash_command::SlashCommand;
 use crate::markov_chains::MarkovService;
-use crate::types::DB;
 
 pub struct Stats;
 
@@ -21,11 +20,11 @@ impl SlashCommand for Stats {
         "shows stats about this server".to_string()
     }
 
-    async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction, database: &DB) -> Result<(), SerenityError> {
+    async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction) -> Result<(), SerenityError> {
         let mut embed = CreateEmbed::default();
         let guild_str = command.guild_id.unwrap().to_string();
-        let enough = MarkovService::get_max(database, &guild_str).await > 1000;
-        let (entries, used) = MarkovService::get_stats(database, &guild_str).await;
+        let enough = MarkovService::get_max(&guild_str).await > 1000;
+        let (entries, used) = MarkovService::get_stats(&guild_str).await;
 
         embed.title("Stats")
             .colour(Color::from_rgb(255, 255, 255))

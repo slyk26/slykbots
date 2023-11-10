@@ -9,27 +9,26 @@ use crate::handler::events::ready;
 use crate::handler::events::interaction_create;
 use crate::handler::events::message;
 use crate::handler::events::voice_state_update;
-use crate::types::{COMMANDS, DB};
+use crate::types::COMMANDS;
 
 pub struct EventHandler {
-    pub database: DB,
     pub commands: COMMANDS
 }
 
 impl EventHandler {
-    pub fn init(database:  DB) -> Self {
+    pub fn init() -> Self {
         let mut commands: COMMANDS = COMMANDS::new();
         commands.insert(Stats.name(), Box::new(Stats));
         commands.insert(Music.name(), Box::new(Music));
 
-        EventHandler {database, commands}
+        EventHandler {commands}
     }
 }
 
 #[async_trait]
 impl serenity::prelude::EventHandler for EventHandler {
     async fn message(&self, ctx: Context, new_message: Message) {
-        message::call(&ctx, new_message.clone(), &self.database).await;
+        message::call(&ctx, new_message.clone()).await;
     }
 
     async fn ready(&self, ctx: Context, rdy: Ready){
@@ -41,6 +40,6 @@ impl serenity::prelude::EventHandler for EventHandler {
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        interaction_create::call(&ctx, &interaction, &self.commands, &self.database).await;
+        interaction_create::call(&ctx, &interaction, &self.commands).await;
     }
 }

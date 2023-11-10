@@ -6,7 +6,6 @@ use serenity::model::prelude::InteractionResponseType;
 use serenity::prelude::SerenityError;
 use serenity::utils::Color;
 use crate::commands::SlashCommand;
-use crate::types::DB;
 use crate::LEGACY_CMD;
 
 pub struct Music;
@@ -21,7 +20,7 @@ impl SlashCommand for Music {
         "shows all related legacy commands for the music player".to_string()
     }
 
-    async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction, _database: &DB) -> Result<(), SerenityError> {
+    async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction) -> Result<(), SerenityError> {
         let mut embed = CreateEmbed::default();
         embed.title("Youtube Player")
             .colour(Color::from_rgb(255, 0, 0))
