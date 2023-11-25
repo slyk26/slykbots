@@ -1,3 +1,4 @@
+use std::env::var;
 use async_openai::types::{ChatCompletionRequestMessage, ChatCompletionRequestMessageArgs, CreateChatCompletionRequestArgs, CreateCompletionRequestArgs};
 use serenity::framework::standard::CommandResult;
 use serenity::framework::standard::macros::{command, group, hook};
@@ -16,6 +17,8 @@ struct Ai;
 #[command]
 #[only_in(guilds)]
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
+    if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return Ok(()); }
+
     let r = CreateCompletionRequestArgs::default()
         .model("gpt-3.5-turbo-instruct")
         .prompt(&msg.content)
@@ -39,7 +42,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[hook]
 pub async fn dm_chatting(ctx: &Context, msg: &Message) {
-    if !msg.is_private() { return; }
+    if !msg.is_private() || !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return; }
 
     let typing = Typing::start(ctx.http.clone(), msg.channel_id.0).unwrap();
     let new_prompt = ChatCompletionRequestMessageArgs::default()

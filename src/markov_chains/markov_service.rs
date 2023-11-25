@@ -1,3 +1,4 @@
+use std::env;
 use sqlx::{Error, query, Row, query_as};
 use rand::{Rng, thread_rng};
 use serenity::model::prelude::Message;
@@ -106,12 +107,16 @@ impl MarkovService {
 
         if let Ok(start) = MarkovService::get_start_model(&guild_id).await {
             let mut part = start;
+            let mut current_word = 0;
 
             while msg.len() < 2000 {
                 msg.push_str(format!("{} ", part.current_word).as_str());
+                current_word += 1;
 
                 if let Some(next) = part.next_word {
                     part = MarkovService::get_next(next, part.guild_id).await;
+                } else if env::var("MIN_WORDS").unwrap_or(String::from("9999")).parse::<i32>().unwrap() > current_word {
+                    part = MarkovService::get_start_model(&guild_id).await.unwrap();
                 } else {
                     debug!("return message: {}", msg);
                     return msg;
@@ -126,22 +131,32 @@ impl MarkovService {
 
     async fn get_next(current_word: String, from_guild: String) -> MarkovModel {
         if let Ok(possibilities) =
-            query_as::<_, MarkovModel>("select * from markov_data where current_word = $1 and guild_id = $2")
-                .bind(current_word)
-                .bind(from_guild)
+            query_as::<_, MarkovModel>("select * from markov_data where current_word = $1 and guild_id = $2 order by frequency desc")
+                .bind(&current_word)
+                .bind(&from_guild)
                 .fetch_all(PG.get().unwrap()).await {
-            let idx = thread_rng().gen_range(0..possibilities.len());
-            possibilities[idx].clone()
+
+            let freqs: Vec<i32> = possibilities.iter().map(| p | p.frequency).collect();
+            let randomshit = thread_rng().gen_range(0..freqs.iter().sum());
+            MarkovService::find_element(&possibilities, randomshit).unwrap_or(MarkovModel::default())
         } else {
             error!("cannot fetch next markov part");
-            MarkovModel {
-                id: -1,
-                guild_id: "".to_string(),
-                current_word: "".to_string(),
-                next_word: None,
-                frequency: -1,
+            MarkovModel::default()
+        }
+    }
+
+    fn find_element(vec: &[MarkovModel], f: i32) -> Option<MarkovModel> {
+        let mut sum = 0;
+
+        for (i, element) in vec.iter().enumerate() {
+            if i != 0 {
+                sum += vec[i - 1].frequency;
+            }
+            if sum + element.frequency > f {
+                return Some(element.clone());
             }
         }
+        None
     }
 
     pub async fn send_message(ctx: &Context, msg: &Message) {
