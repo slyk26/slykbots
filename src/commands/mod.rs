@@ -11,7 +11,6 @@ mod slash_command {
     use serenity::client::Context;
     use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
     use serenity::prelude::SerenityError;
-    use crate::types::DB;
 
     #[async_trait]
     pub trait SlashCommand: Send + Sync {
@@ -23,6 +22,6 @@ mod slash_command {
             command.name(self.name()).description(self.description())
         }
 
-        async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction, database: &DB) -> Result<(), SerenityError>;
+        async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction) -> Result<(), SerenityError>;
     }
 }

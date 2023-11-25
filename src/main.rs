@@ -1,21 +1,33 @@
+#[macro_use]
+extern crate log;
+
+use std::env::var;
+use std::sync::OnceLock;
+use std::time::Duration;
+use async_openai::config::OpenAIConfig;
+
+use serenity::framework::StandardFramework;
+use serenity::prelude::{Client, GatewayIntents};
+use songbird::SerenityInit;
+use sqlx::{Pool, Postgres};
+use sqlx::postgres::PgPoolOptions;
+
+use crate::ai::{AI_GROUP, dm_chatting};
+use crate::handler::EventHandler;
+use crate::voice::VOICE_GROUP;
+
 mod commands;
 mod handler;
 mod markov_chains;
 mod voice;
 mod types;
+mod ai;
+pub mod utils;
 
-#[macro_use]
-extern crate log;
+pub const LEGACY_CMD: &str = ">";
 
-use std::env::var;
-use std::time::Duration;
-use serenity::prelude::{Client, GatewayIntents};
-use sqlx::postgres::PgPoolOptions;
-use songbird::SerenityInit;
-use crate::handler::EventHandler;
-use serenity::framework::StandardFramework;
-use voice::voice_utils::LEGACY_CMD;
-use crate::voice::GENERAL_GROUP;
+static PG: OnceLock<Pool<Postgres>> = OnceLock::new();
+static AI: OnceLock<async_openai::Client<OpenAIConfig>> = OnceLock::new();
 
 #[tokio::main]
 async fn main() {
@@ -27,6 +39,7 @@ async fn main() {
         .max_lifetime(Duration::from_secs(10))
         .max_connections(25)
         .connect(url.as_str()).await.expect("Cannot create Database Pool");
+
     if let Err(e) = sqlx::migrate!().run(&pool).await {
         error!("Migration: {:?}",e);
     }
@@ -34,18 +47,24 @@ async fn main() {
     let framework = StandardFramework::new()
         .configure(|c| c
             .prefix(LEGACY_CMD))
-        .group(&GENERAL_GROUP);
+        .group(&VOICE_GROUP)
+        .group(&AI_GROUP)
+        .normal_message(dm_chatting);
 
     // create bot
     let mut bot = Client::builder(token.clone(),
                                   GatewayIntents::MESSAGE_CONTENT |
                                       GatewayIntents::GUILD_MESSAGES |
+                                      GatewayIntents::DIRECT_MESSAGES |
                                       GatewayIntents::GUILDS | GatewayIntents::GUILD_VOICE_STATES)
-        .event_handler(EventHandler::init(pool))
+        .event_handler(EventHandler::init())
         .framework(framework)
         .register_songbird()
         .await
         .expect("Error creating client");
+
+    PG.set(pool).expect("Error setting DB Pool");
+    AI.set(async_openai::Client::new()).expect("Error setting OpenAI Api Config");
 
     // start bot
     if let Err(why) = bot.start().await {

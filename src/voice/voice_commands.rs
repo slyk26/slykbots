@@ -11,11 +11,12 @@ use songbird::input::{Metadata, Restartable};
 use url::Url;
 use crate::voice::afk_auto_leave::AfkAutoLeave;
 use crate::voice::track_info::TrackInfoNotifier;
-use crate::voice::voice_utils::{get_manager, LEGACY_CMD, reply, say};
+use crate::utils::{get_voicemanager, reply, say};
+use crate::LEGACY_CMD;
 
 #[group]
 #[commands(join, leave, play, skip, list, stop)]
-struct General;
+struct Voice;
 
 #[command]
 #[only_in(guilds)]
@@ -23,7 +24,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
     let chan_id = msg.channel_id;
-    let manager = get_manager(ctx).await;
+    let manager = get_voicemanager(ctx).await;
 
     let was_in_vc = manager.get(guild_id).is_some();
 
@@ -42,7 +43,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 
     let (handle_lock, success) = manager.join(guild_id, connect_to).await;
 
-    if let Ok(_) = success {
+    if success.is_ok() {
         let send_http = ctx.http.clone();
         let mut handle = handle_lock.lock().await;
 
@@ -62,7 +63,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
-    let manager = get_manager(ctx).await;
+    let manager = get_voicemanager(ctx).await;
     let has_handler = manager.get(guild_id).is_some();
 
     if has_handler {
@@ -83,7 +84,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
     let chan_id = msg.channel_id;
-    let manager = get_manager(&ctx).await;
+    let manager = get_voicemanager(&ctx).await;
 
     debug!("{:?}", guild.voice_states);
 
@@ -132,7 +133,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
-    let manager = get_manager(&ctx).await;
+    let manager = get_voicemanager(&ctx).await;
 
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
@@ -150,7 +151,7 @@ async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
-    let manager = get_manager(ctx).await;
+    let manager = get_voicemanager(ctx).await;
 
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
@@ -170,7 +171,7 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
-    let manager = get_manager(&ctx).await;
+    let manager = get_voicemanager(&ctx).await;
 
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;

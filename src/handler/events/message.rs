@@ -4,19 +4,18 @@ use serenity::http::Http;
 use serenity::model::prelude::Message;
 use serenity::prelude::Context;
 use crate::markov_chains::MarkovService;
-use crate::types::DB;
-use crate::voice::voice_utils::LEGACY_CMD;
+use crate::LEGACY_CMD;
 
-pub async fn call(ctx: &Context, new_message: Message, db: &DB) {
+pub async fn call(ctx: &Context, new_message: Message) {
     let cache = ctx.http.clone();
 
-    if !mentions_bot(&cache, &new_message).await && !is_legacy_command(&new_message) {
-        MarkovService::destruct_message(&new_message, db).await;
+    if !mentions_bot(&cache, &new_message).await && !is_legacy_command(&new_message) && !new_message.is_private() {
+        MarkovService::destruct_message(&new_message).await;
     }
 
     // 7% chance after msg or always on @mention
-    if thread_rng().gen_range(0..100) < 7 || mentions_bot(&cache, &new_message).await {
-        MarkovService::send_message(ctx, &new_message, db).await;
+    if (thread_rng().gen_range(0..100) < 7 || mentions_bot(&cache, &new_message).await) && !new_message.is_private() {
+        MarkovService::send_message(ctx, &new_message).await;
     }
 }
 
