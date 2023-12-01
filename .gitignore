@@ -1,5 +1,6 @@
 murkov.iml
 .idea
+.fleet
 *Cargo.lock*
 .env
 target

@@ -3,7 +3,7 @@ use async_openai::types::{ChatCompletionRequestMessage, ChatCompletionRequestMes
 use serenity::framework::standard::CommandResult;
 use serenity::framework::standard::macros::{command, group, hook};
 use serenity::http::Typing;
-use serenity::model::prelude::{Message};
+use serenity::model::prelude::Message;
 use serenity::prelude::Context;
 use crate::AI;
 use crate::ai::ai_cache_service::AiCacheService;
@@ -16,13 +16,14 @@ struct Ai;
 
 #[command]
 #[only_in(guilds)]
+#[bucket = "openai"]
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return Ok(()); }
 
     let r = CreateCompletionRequestArgs::default()
-        .model("gpt-3.5-turbo-instruct")
+        .model(var("AI_MODEL_PROMPT").unwrap_or("gpt-3.5-turbo-instruct".to_string()))
         .prompt(&msg.content)
-        .max_tokens(100_u16)
+        .max_tokens(var("MAX_TOKENS").unwrap_or("100".to_string()).parse::<u16>().unwrap())
         .build()
         .unwrap();
 
@@ -62,7 +63,7 @@ pub async fn dm_chatting(ctx: &Context, msg: &Message) {
     debug!("asking api with: {:?}", prompts);
 
     let r = CreateChatCompletionRequestArgs::default()
-        .model("gpt-3.5-turbo")
+        .model(var("AI_MODEL_CHAT").unwrap_or("gpt-3.5-turbo".to_string()))
         .messages(prompts)
         .max_tokens(300_u16)
         .build()

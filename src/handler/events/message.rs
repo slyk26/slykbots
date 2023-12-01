@@ -1,7 +1,10 @@
 use std::sync::Arc;
 use rand::{Rng, thread_rng};
 use serenity::http::Http;
-use serenity::model::prelude::Message;
+use serenity::model::prelude::{Message};
+
+
+
 use serenity::prelude::Context;
 use crate::markov_chains::MarkovService;
 use crate::LEGACY_CMD;
@@ -14,7 +17,7 @@ pub async fn call(ctx: &Context, new_message: Message) {
     }
 
     // 7% chance after msg or always on @mention
-    if (thread_rng().gen_range(0..100) < 7 || mentions_bot(&cache, &new_message).await) && !new_message.is_private() {
+    if (thread_rng().gen_range(0..100) < 7 || mentions_bot(&cache, &new_message).await) && !new_message.is_private() && !is_legacy_command(&new_message) {
         MarkovService::send_message(ctx, &new_message).await;
     }
 }
