@@ -11,9 +11,8 @@ use crate::ai::ai_cache_service::AiCacheService;
 use crate::utils::{reply, say};
 
 #[group]
-#[commands(ask)]
+#[commands(ask, schizo)]
 struct Ai;
-
 
 #[command]
 #[only_in(guilds)]
@@ -21,19 +20,34 @@ struct Ai;
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return Ok(()); }
 
+    reply(&msg, &ctx.http, make_prompt(&msg.content).await).await;
+    Ok(())
+}
+
+#[command]
+#[only_in(guilds)]
+#[bucket = "openai"]
+async fn schizo(ctx: &Context, msg: &Message) -> CommandResult {
+    if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return Ok(()); }
+
     let mut prompt = var("PROMPT_BASE").unwrap_or(String::new());
     let clean = msg.content.split_whitespace().skip(1).collect::<Vec<&str>>().join(" ");
 
     prompt.add_assign(clean.as_str());
 
+    reply(&msg, &ctx.http, make_prompt(&prompt).await).await;
+    Ok(())
+}
+
+async fn make_prompt(str: &String) -> String  {
     let r = CreateCompletionRequestArgs::default()
         .model(var("AI_MODEL_PROMPT").unwrap_or("gpt-3.5-turbo-instruct".to_string()))
-        .prompt(prompt)
+        .prompt(str)
         .max_tokens(var("MAX_TOKENS").unwrap_or("100".to_string()).parse::<u16>().unwrap())
         .build()
         .unwrap();
 
-    let response = match AI.get().unwrap()
+    match AI.get().unwrap()
         .completions()
         .create(r).await {
         Ok(r) => r.choices.first().unwrap().text.clone(),
@@ -41,11 +55,9 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
             error!("{}", format!("OpenAI Error: {}", e));
             String::from("brain stopped working, try again later")
         }
-    };
-
-    reply(msg, &ctx.http, response).await;
-    Ok(())
+    }
 }
+
 
 #[hook]
 pub async fn dm_chatting(ctx: &Context, msg: &Message) {

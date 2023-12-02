@@ -10,7 +10,7 @@ services:
       murkov-bot
   db:
     container_name: murkov-db
-    image: postgres
+    image: postgres:15
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
