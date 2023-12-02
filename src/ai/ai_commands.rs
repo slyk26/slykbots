@@ -1,4 +1,5 @@
 use std::env::var;
+use std::ops::AddAssign;
 use async_openai::types::{ChatCompletionRequestMessage, ChatCompletionRequestMessageArgs, CreateChatCompletionRequestArgs, CreateCompletionRequestArgs};
 use serenity::framework::standard::CommandResult;
 use serenity::framework::standard::macros::{command, group, hook};
@@ -20,9 +21,14 @@ struct Ai;
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return Ok(()); }
 
+    let mut prompt = var("PROMPT_BASE").unwrap_or(String::new());
+    let clean = msg.content.split_whitespace().skip(1).collect::<Vec<&str>>().join(" ");
+
+    prompt.add_assign(clean.as_str());
+
     let r = CreateCompletionRequestArgs::default()
         .model(var("AI_MODEL_PROMPT").unwrap_or("gpt-3.5-turbo-instruct".to_string()))
-        .prompt(&msg.content)
+        .prompt(prompt)
         .max_tokens(var("MAX_TOKENS").unwrap_or("100".to_string()).parse::<u16>().unwrap())
         .build()
         .unwrap();
