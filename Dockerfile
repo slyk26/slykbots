@@ -23,15 +23,14 @@ WORKDIR /murkov
 
 COPY ./ .
 
-RUN cargo build --release
+RUN cargo build --release --target x86_64-unknown-linux-musl
 
 FROM ubuntu:latest
 
 RUN apt-get update
 RUN apt-get -y install libopus-dev cmake protobuf-compiler build-essential autoconf automake libtool m4 ffmpeg curl python3
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
-RUN chmod a+rx /usr/local/bin/yt-dlp
 
+COPY --from=builder /usr/local/bin/yt-dlp /usr/local/bin/yt-dlp
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 

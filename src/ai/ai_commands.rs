@@ -20,7 +20,7 @@ struct Ai;
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return Ok(()); }
 
-    reply(&msg, &ctx.http, make_prompt(&msg.content).await).await;
+    reply(msg, &ctx.http, make_prompt(&msg.content).await).await;
     Ok(())
 }
 
@@ -35,7 +35,7 @@ async fn schizo(ctx: &Context, msg: &Message) -> CommandResult {
 
     prompt.add_assign(clean.as_str());
 
-    reply(&msg, &ctx.http, make_prompt(&prompt).await).await;
+    reply(msg, &ctx.http, make_prompt(&prompt).await).await;
     Ok(())
 }
 
