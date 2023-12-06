@@ -85,7 +85,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
     let chan_id = msg.channel_id;
-    let manager = get_voicemanager(&ctx).await;
+    let manager = get_voicemanager(ctx).await;
 
     debug!("{:?}", guild.voice_states);
 
@@ -102,7 +102,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             let mut handler = handler_lock.lock().await;
             let source: Option<Restartable>;
 
-            if let Ok(_) = Url::parse(&*url) {
+            if Url::parse(&url).is_ok() {
                 source = url_source(url).await;
             } else {
                 source = word_source(args.rewind()).await;
@@ -134,7 +134,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 async fn skip(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
-    let manager = get_voicemanager(&ctx).await;
+    let manager = get_voicemanager(ctx).await;
 
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
@@ -183,7 +183,7 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
-    let manager = get_voicemanager(&ctx).await;
+    let manager = get_voicemanager(ctx).await;
 
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
@@ -225,7 +225,7 @@ async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 async fn info(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
-    let manager = get_voicemanager(&ctx).await;
+    let manager = get_voicemanager(ctx).await;
 
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
@@ -234,7 +234,7 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
         let _ = msg.channel_id.send_message(&ctx.http, |m| {
             m.embed(|e| {
                 let m = current_song.metadata();
-                let embed = e.colour(Color::from_rgb(255, 0, 0)).title(format!("{}", m.title.as_ref().unwrap()))
+                let embed = e.colour(Color::from_rgb(255, 0, 0)).title(m.title.as_ref().unwrap().to_string())
                 .image(m.thumbnail.as_ref().unwrap())
                 .field("Channel", format!("{} - [Link]({})", m.artist.as_ref().unwrap_or(&"unknown".to_string()), m.source_url.as_ref().unwrap_or(&"".to_string())) , false)
                 .field("Length", format_duration(&m.duration.unwrap()), true)

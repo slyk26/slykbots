@@ -16,7 +16,7 @@ pub struct Yokes;
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
     debug!("hello!");
     
-    let online_users = get_online_members(&ctx, msg.guild_id.unwrap()).await?;
+    let online_users = get_online_members(ctx, msg.guild_id.unwrap()).await?;
     debug!("{:?}", online_users);
     let random_user = online_users.get(thread_rng().gen_range(0..online_users.len())).unwrap();
     
