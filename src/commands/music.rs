@@ -26,9 +26,11 @@ impl SlashCommand for Music {
             .colour(Color::from_rgb(255, 0, 0))
             .field(format!("{}join", LEGACY_CMD), "joins the vc\n(you have to be in a vc first)", false)
             .field(format!("{}play", LEGACY_CMD), "play a url or use words to search", false)
+            .field(format!("{}play", LEGACY_CMD), "shows info about current song", false)
             .field(format!("{}stop", LEGACY_CMD), "clears queue", false)
             .field(format!("{}leave", LEGACY_CMD), "removes bot from vc\n(also clears queue)", false)
             .field(format!("{}skip", LEGACY_CMD), "skip the current song", false)
+            .field(format!("{}skip x", LEGACY_CMD), "skip x songs", false)
             .field(format!("{}list", LEGACY_CMD), "show the queue", false)
             .footer(|f| {
                 f.text(format!("by slyk26 \t\t\t\t v.{}", env!("CARGO_PKG_VERSION")))
