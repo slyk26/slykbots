@@ -1,11 +1,12 @@
 use std::collections::HashMap;
-use std::ops::AddAssign;
+use std::ops::{AddAssign, Add};
 use std::time::Duration;
 use serenity::framework::standard::{Args, CommandResult};
 use serenity::framework::standard::macros::{command, group};
 use serenity::model::prelude::{Message, UserId, VoiceState};
 use serenity::prelude::{Context, Mentionable};
 use serenity::utils::Color;
+use songbird::tracks::TrackHandle;
 use songbird::{Event, TrackEvent};
 use songbird::input::{Metadata, Restartable};
 use url::Url;
@@ -15,7 +16,7 @@ use crate::utils::{get_voicemanager, reply, say};
 use crate::LEGACY_CMD;
 
 #[group]
-#[commands(join, leave, play, skip, list, stop)]
+#[commands(join, leave, play, skip, list, stop, info)]
 struct Voice;
 
 #[command]
@@ -130,7 +131,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
 #[command]
 #[only_in(guilds)]
-async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+async fn skip(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
     let manager = get_voicemanager(&ctx).await;
@@ -138,8 +139,19 @@ async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
         let queue = handler.queue();
-        let _ = queue.skip();
-        reply(msg, &ctx.http, format!("Song skipped 👉 {} in queue.", queue.len() - 1)).await;
+        let how_many = args.single::<i32>().unwrap_or(1);
+
+        queue.pause()?;
+
+        queue.modify_queue(|q| {
+            for _ in 0..how_many {
+                q.pop_front();
+            }
+        });
+
+        queue.resume()?;
+
+        reply(msg, &ctx.http, format!("{} Song(s) skipped! 👉 {} in queue.", how_many, queue.len())).await;
     } else {
         reply(msg, &ctx.http, "let me lurk in peace madgE").await;
     }
@@ -156,7 +168,7 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     if let Some(handler_lock) = manager.get(guild_id) {
         let handler = handler_lock.lock().await;
         let queue = handler.queue();
-        let _ = queue.stop();
+        queue.stop();
 
         reply(msg, &ctx.http, "Queue cleared").await;
     } else {
@@ -181,7 +193,8 @@ async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 
         let _ = msg.channel_id.send_message(&ctx.http, |m| {
             m.embed(|e| {
-                let embed = e.colour(Color::from_rgb(255, 0, 0)).title("Current Bangers");
+                let total: u64 = queue.iter().map(|track| track.metadata().duration.unwrap_or(Duration::from_secs(0)).as_secs()).sum();
+                let embed = e.colour(Color::from_rgb(255, 0, 0)).title(format!("Current Bangers - Total: ({})", format_duration(&Duration::from_secs(total))));
 
                 if let Some(current) = queue.first() {
                     let uuid = current.uuid();
@@ -191,7 +204,8 @@ async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
                             break;
                         }
                         let track = queue.get(i).unwrap();
-                        let (name, value) = format_track(track.uuid().eq(&uuid), track.metadata());
+                        let (name, mut value) = format_track(track.uuid().eq(&uuid), track.metadata());
+                        value = value.add(format!(" - ({})", format_duration(&track.metadata().duration.unwrap())).as_str());
                         embed.field(name, value, false);
                     }
                 } else {
@@ -204,6 +218,42 @@ async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     }
 
     Ok(())
+}
+
+#[command]
+#[only_in(guilds)]
+async fn info(ctx: &Context, msg: &Message) -> CommandResult {
+    let guild = msg.guild(&ctx.cache).unwrap();
+    let guild_id = guild.id;
+    let manager = get_voicemanager(&ctx).await;
+
+    if let Some(handler_lock) = manager.get(guild_id) {
+        let handler = handler_lock.lock().await;
+        let queue = handler.queue().current_queue();
+        let current_song: &TrackHandle = queue.first().unwrap();
+        let _ = msg.channel_id.send_message(&ctx.http, |m| {
+            m.embed(|e| {
+                let m = current_song.metadata();
+                let embed = e.colour(Color::from_rgb(255, 0, 0)).title(format!("{}", m.title.as_ref().unwrap()))
+                .image(m.thumbnail.as_ref().unwrap())
+                .field("Channel", format!("{} - [Link]({})", m.artist.as_ref().unwrap_or(&"unknown".to_string()), m.source_url.as_ref().unwrap_or(&"".to_string())) , false)
+                .field("Length", format_duration(&m.duration.unwrap()), true)
+                .footer(|f|
+                    f.icon_url("https://www.youtube.com/s/desktop/1f2ae858/img/favicon_48x48.png")
+                .text(format!(" x murkov - v{}", env!("CARGO_PKG_VERSION")))
+                );
+                embed
+            })
+        }).await;
+    }
+    Ok(())
+}
+
+fn format_duration(d: &Duration) -> String {
+    let total_seconds = d.as_secs();
+    let minutes = total_seconds / 60;
+    let seconds = total_seconds % 60;
+    format!("{:02}:{:02}", minutes, seconds)
 }
 
 fn format_track(first: bool, m: &Metadata) -> (String, String) {

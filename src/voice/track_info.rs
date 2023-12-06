@@ -6,7 +6,7 @@ use songbird::EventContext;
 use songbird::Event;
 use songbird::EventHandler;
 use EventHandler as VoiceEventHandler;
-use crate::utils::say;
+//use crate::utils::say;
 
 pub struct TrackInfoNotifier {
     pub chan_id: ChannelId,
@@ -17,8 +17,8 @@ pub struct TrackInfoNotifier {
 impl VoiceEventHandler for TrackInfoNotifier {
     async fn act(&self, ctx: &EventContext<'_>) -> Option<Event> {
         if let EventContext::Track(track_list) = ctx {
-            let (_, handle) = track_list.first().unwrap();
-            say(self.chan_id, &self.http, &format!("🎶 Now playing: `{}`", handle.metadata().title.clone().unwrap())).await;
+            let (_, _handle) = track_list.first().unwrap();
+            // say(self.chan_id, &self.http, &format!("🎶 Now playing: `{}`", handle.metadata().title.clone().unwrap())).await;
         }
         None
     }
