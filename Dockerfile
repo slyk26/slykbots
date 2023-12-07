@@ -11,7 +11,8 @@ COPY Cargo.toml Cargo.lock /src/
 
 # We create a new lib and then use our own Cargo.toml
 RUN cargo new /temp/murkov
-COPY src/Cargo.toml /temp/murkov/
+RUN pwd
+COPY murkov/Cargo.toml /temp/murkov/
 
 
 WORKDIR /temp/murkov
