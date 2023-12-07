@@ -10,19 +10,20 @@ RUN chmod a+rx /usr/local/bin/yt-dlp
 COPY Cargo.toml Cargo.lock /src/
 
 # We create a new lib and then use our own Cargo.toml
-RUN cargo new --lib /temp/lib
-COPY murkov/Cargo.toml /temp/lib/
+RUN cargo new /temp/murkov
+COPY murkov/Cargo.toml /temp/murkov/
 
 
-WORKDIR /temp/lib
+WORKDIR /temp/murkov
 RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --release
 
-COPY ./murkov /temp/lib
+COPY ./ /temp/murkov
+
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry <<EOF
   set -e
   # update timestamps to force a new build
-  touch /temp/lib/src/lib.rs /temp/lib/src/main.rs
+  touch /temp/murkov/src/main.rs
   cargo build --release
 EOF
 
