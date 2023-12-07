@@ -11,7 +11,7 @@ COPY Cargo.toml Cargo.lock /murkov/
 
 
 RUN cargo new /temp/murkov
-COPY murkov/Cargo.toml /temp/murkov/
+COPY Cargo.toml /temp/murkov/
 
 
 WORKDIR /temp/murkov
