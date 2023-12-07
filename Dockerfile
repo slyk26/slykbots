@@ -7,11 +7,10 @@ RUN apt-get -y install libopus-dev cmake protobuf-compiler build-essential autoc
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 RUN chmod a+rx /usr/local/bin/yt-dlp
 
-COPY Cargo.toml Cargo.lock /src/
+COPY Cargo.toml Cargo.lock /murkov/
 
-# We create a new lib and then use our own Cargo.toml
+
 RUN cargo new /temp/murkov
-RUN pwd
 COPY murkov/Cargo.toml /temp/murkov/
 
 
