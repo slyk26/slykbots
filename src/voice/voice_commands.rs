@@ -16,7 +16,7 @@ use crate::utils::{get_voicemanager, reply, say};
 use crate::LEGACY_CMD;
 
 #[group]
-#[commands(join, leave, play, skip, list, stop, info)]
+#[commands(join, leave, play, skip, list, stop, info, remove)]
 struct Voice;
 
 #[command]
@@ -246,6 +246,36 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
             })
         }).await;
     }
+    Ok(())
+}
+
+#[command]
+#[only_in(guilds)]
+async fn remove(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let how_many = args.single::<usize>().unwrap_or(1);
+    let guild_id = msg.guild(&ctx.cache).unwrap().id;
+    let manager = get_voicemanager(ctx).await;
+
+    if let Some(handler_lock) = manager.get(guild_id) {
+        let handler = handler_lock.lock().await;
+        let queue = handler.queue();
+        let current_song = queue.current().unwrap();
+        debug!("{:?}", current_song);
+
+        if how_many >= queue.len() {
+            debug!("stop because {how_many} >= queue size");
+            queue.stop();
+        } else {
+            queue.modify_queue(|q| {
+                for i in 0..how_many {
+                    debug!("loop {i}");
+                    q.pop_back();
+                }
+            });
+        }
+    }
+
+    reply(msg, &ctx.http, "removed ").await;
     Ok(())
 }
 
