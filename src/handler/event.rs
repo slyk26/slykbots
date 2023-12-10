@@ -4,7 +4,7 @@ use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::prelude::VoiceState;
 use serenity::prelude::*;
-use crate::commands::{SlashCommand, Stats, Music};
+use crate::commands::{SlashCommand, Stats, Music, Toggle};
 use crate::handler::events::ready;
 use crate::handler::events::interaction_create;
 use crate::handler::events::message;
@@ -20,6 +20,7 @@ impl EventHandler {
         let mut commands: COMMANDS = COMMANDS::new();
         commands.insert(Stats.name(), Box::new(Stats));
         commands.insert(Music.name(), Box::new(Music));
+        commands.insert(Toggle.name(), Box::new(Toggle));
 
         EventHandler {commands}
     }

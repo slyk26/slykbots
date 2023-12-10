@@ -14,6 +14,7 @@ use crate::voice::afk_auto_leave::AfkAutoLeave;
 use crate::voice::track_info::TrackInfoNotifier;
 use crate::utils::{get_voicemanager, reply, say};
 use crate::LEGACY_CMD;
+use crate::settings::{MUSIC_SETTING, SettingsService};
 
 #[group]
 #[commands(join, leave, play, skip, list, stop, info, remove)]
@@ -22,6 +23,7 @@ struct Voice;
 #[command]
 #[only_in(guilds)]
 async fn join(ctx: &Context, msg: &Message) -> CommandResult {
+    if ! SettingsService::is_enabled(msg.guild_id.unwrap().0 as i64, MUSIC_SETTING.to_string()).await { return Ok(()) }
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
     let chan_id = msg.channel_id;

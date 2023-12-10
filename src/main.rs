@@ -25,6 +25,7 @@ mod voice;
 mod types;
 mod ai;
 mod yoking;
+mod settings;
 pub mod utils;
 
 pub const LEGACY_CMD: &str = ">";
