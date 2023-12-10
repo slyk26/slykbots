@@ -8,6 +8,7 @@ use serenity::model::prelude::Message;
 use serenity::prelude::Context;
 use crate::AI;
 use crate::ai::ai_cache_service::AiCacheService;
+use crate::settings::{AI_SETTING, SettingsService};
 use crate::utils::{reply, say};
 
 #[group]
@@ -18,7 +19,8 @@ struct Ai;
 #[only_in(guilds)]
 #[bucket = "openai"]
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
-    if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return Ok(()); }
+    if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") ||
+        ! SettingsService::is_enabled(msg.guild_id.unwrap().0 as i64, AI_SETTING.to_string()).await { return Ok(()); }
 
     reply(msg, &ctx.http, make_prompt(&msg.content).await).await;
     Ok(())
@@ -28,9 +30,10 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 #[only_in(guilds)]
 #[bucket = "openai"]
 async fn schizo(ctx: &Context, msg: &Message) -> CommandResult {
-    if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") { return Ok(()); }
+    if !matches!(var("AI").unwrap_or(String::from("0")).as_str(), "1") ||
+        ! SettingsService::is_enabled(msg.guild_id.unwrap().0 as i64, AI_SETTING.to_string()).await { return Ok(()); }
 
-    let mut prompt = var("PROMPT_BASE").unwrap_or(String::new());
+    let mut prompt = var("PROMPT_BASE").unwrap_or_default();
     let clean = msg.content.split_whitespace().skip(1).collect::<Vec<&str>>().join(" ");
 
     prompt.add_assign(clean.as_str());
