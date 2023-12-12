@@ -28,7 +28,7 @@ impl SlashCommand for Music {
             .field(format!("{}play", LEGACY_CMD), "play a url or use words to search", false)
             .field(format!("{}play", LEGACY_CMD), "shows info about current song", false)
             .field(format!("{}stop", LEGACY_CMD), "clears queue", false)
-            .field(format!("{}remove x", LEGACY_CMD), "removes x songs (newly added are remoed frst) - default: 1", false)
+            .field(format!("{}remove x", LEGACY_CMD), "removes x songs (newly added are removed frst) - default: 1", false)
             .field(format!("{}leave", LEGACY_CMD), "removes bot from vc\n(also clears queue)", false)
             .field(format!("{}skip x", LEGACY_CMD), "skip x songs - default: 1", false)
             .field(format!("{}list", LEGACY_CMD), "show the queue", false)

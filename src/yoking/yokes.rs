@@ -1,10 +1,11 @@
-
-
+use std::time::Duration;
 use rand::{thread_rng, Rng};
 use serenity::{framework::standard::{macros::{command, group}, CommandResult}, prelude::Context, model::{prelude::{Message, UserId}, user::OnlineStatus}, Error};
+use serenity::framework::standard::DispatchError;
+use serenity::framework::standard::macros::hook;
 use serenity::model::id::GuildId;
 
-use crate::utils::say;
+use crate::utils::{reply, say};
 
 #[group]
 #[commands(ping)]
@@ -39,4 +40,21 @@ async fn get_online_members(ctx: &Context, guild_id: GuildId) -> Result<Vec<User
              }
          })
          .collect::<Vec<UserId>>())
+}
+
+#[hook]
+pub async fn dispatch_error_hook(ctx: &Context, msg: &Message, error: DispatchError, command_name: &str) {
+    match error {
+        DispatchError::Ratelimited(info) => {
+           reply(msg, &ctx.http, format!("you can use that command in {} again", format_duration(info.rate_limit))).await;
+        },
+        _ => warn!("Unhandled dispatch error in {}.", command_name),
+    }
+}
+
+fn format_duration(d: Duration) -> String {
+    let total_seconds = d.as_secs();
+    let minutes = total_seconds / 60;
+    let seconds = total_seconds % 60;
+    format!("{:02}min {:02}s", minutes, seconds)
 }
