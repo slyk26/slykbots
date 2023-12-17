@@ -1,7 +1,7 @@
 use serenity::model::application::command::Command;
 use serenity::model::gateway::{Activity, Ready};
 use serenity::prelude::*;
-use crate::types::COMMANDS;
+use shared::serenity_utils::types::COMMANDS;
 
 pub async fn call(ctx: &Context, ready: &Ready, commands: &COMMANDS) {
     info!("{} is online!", ready.user.name);

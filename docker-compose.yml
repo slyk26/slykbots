@@ -1,7 +1,8 @@
 services:
-  bot:
-    build: .
-    command: ./murkov
+  murkov:
+    build:
+      dockerfile: murkov/Dockerfile
+      context: .
     env_file:
       - .env
     depends_on:
@@ -9,7 +10,7 @@ services:
     container_name:
       murkov-bot
   db:
-    container_name: murkov-db
+    container_name: slykbots-db
     image: postgres:15
     environment:
       - POSTGRES_USER

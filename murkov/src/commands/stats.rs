@@ -5,7 +5,7 @@ use serenity::model::application::interaction::application_command::ApplicationC
 use serenity::model::application::interaction::InteractionResponseType;
 use serenity::prelude::SerenityError;
 use serenity::utils::Color;
-use crate::commands::slash_command::SlashCommand;
+use crate::commands::SlashCommand;
 use crate::markov_chains::MarkovService;
 
 pub struct Stats;

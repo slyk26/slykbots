@@ -2,6 +2,6 @@ db
 .idea
 .git
 target
-Dockerfile
+murkov/Dockerfile
 Cargo.lock
 murkov.iml

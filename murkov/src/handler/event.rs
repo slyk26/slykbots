@@ -9,7 +9,7 @@ use crate::handler::events::ready;
 use crate::handler::events::interaction_create;
 use crate::handler::events::message;
 use crate::handler::events::voice_state_update;
-use crate::types::COMMANDS;
+use shared::serenity_utils::types::COMMANDS;
 
 pub struct EventHandler {
     pub commands: COMMANDS

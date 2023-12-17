@@ -18,15 +18,14 @@ use crate::handler::EventHandler;
 use crate::voice::VOICE_GROUP;
 use crate::yoking::{dispatch_error_hook, YOKES_GROUP};
 
-mod commands;
-mod handler;
 mod markov_chains;
 mod voice;
-mod types;
 mod ai;
 mod yoking;
-mod settings;
 pub mod utils;
+pub mod settings;
+pub mod handler;
+pub mod commands;
 
 pub const LEGACY_CMD: &str = ">";
 
@@ -43,10 +42,6 @@ async fn main() {
         .max_lifetime(Duration::from_secs(10))
         .max_connections(25)
         .connect(url.as_str()).await.expect("Cannot create Database Pool");
-
-    if let Err(e) = sqlx::migrate!().run(&pool).await {
-        error!("Migration: {:?}",e);
-    }
 
     let framework = StandardFramework::new()
         .configure(|c| c

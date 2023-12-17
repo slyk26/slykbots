@@ -24,7 +24,7 @@ impl SlashCommand for Toggle {
         let module: CreateApplicationCommandOption = CreateApplicationCommandOption::default()
             .name("module")
             .kind(CommandOptionType::String)
-            .description("a feature of murkov")
+            .description("a feature of slykbots")
             .required(true)
             .add_string_choice("markov generation", MARKOV_SETTING)
             .add_string_choice("ai generation", AI_SETTING)

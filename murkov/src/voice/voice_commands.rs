@@ -242,7 +242,7 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
                 .field("Length", format_duration(&m.duration.unwrap()), true)
                 .footer(|f|
                     f.icon_url("https://www.youtube.com/s/desktop/1f2ae858/img/favicon_48x48.png")
-                .text(format!(" x murkov - v{}", env!("CARGO_PKG_VERSION")))
+                .text(format!(" x slykbots - v{}", env!("CARGO_PKG_VERSION")))
                 );
                 embed
             })

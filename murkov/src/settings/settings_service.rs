@@ -1,3 +1,4 @@
+use log::debug;
 use sqlx::{Error, query, query_as};
 
 use crate::PG;

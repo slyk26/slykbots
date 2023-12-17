@@ -1,34 +1,20 @@
 [package]
-name = "slykbots"
+name = "shared"
 version = "0.1.0"
 edition = "2021"
 resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[workspace]
-members = ["murkov", "fnb", "shared"]
-
-[[bin]]
-name = "murkov"
-path = "murkov/src/main.rs"
-
-[[bin]]
-name = "fnb"
-path = "fnb/src/main.rs"
-
-[lib]
-name = "shared"
-path = "shared/src/lib.rs"
-
 [dependencies]
 sqlx = { version = "=0.6.3", features = [ "runtime-tokio-rustls", "postgres", "macros"] }
 tokio = { version = "1.28.2", features = [ "rt-multi-thread" ] }
-serenity = "*"
+serenity =  "*"
 log = "0.4.18"
 pretty_env_logger = "0.5.0"
 rand = "0.8.5"
 url = "2.4.0"
 async-openai = "=0.14.3"
 once_cell = "1.18.0"
+
 songbird = {version = "=0.3.2", features = ["yt-dlp", "builtin-queue"]}
