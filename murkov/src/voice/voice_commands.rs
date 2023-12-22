@@ -10,9 +10,9 @@ use songbird::tracks::TrackHandle;
 use songbird::{Event, TrackEvent};
 use songbird::input::{Metadata, Restartable};
 use url::Url;
+use shared::serenity_utils::{get_voicemanager, reply, say};
 use crate::voice::afk_auto_leave::AfkAutoLeave;
 use crate::voice::track_info::TrackInfoNotifier;
-use crate::utils::{get_voicemanager, reply, say};
 use crate::LEGACY_CMD;
 use crate::settings::{MUSIC_SETTING, SettingsService};
 
@@ -71,7 +71,7 @@ async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
 
     if has_handler {
         if let Err(e) = manager.remove(guild_id).await {
-            reply(msg, &ctx.http, e).await;
+            reply(msg, &ctx.http, e.to_string()).await;
         }
         reply(msg, &ctx.http, "baj baj").await;
     } else {

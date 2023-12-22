@@ -11,16 +11,14 @@ use crate::settings::{MARKOV_SETTING, SettingsService};
 pub async fn call(ctx: &Context, new_message: Message) {
     let cache = ctx.http.clone();
 
-    if !new_message.is_private() {
-        if SettingsService::is_enabled(new_message.guild_id.unwrap().0 as i64, MARKOV_SETTING.to_string()).await {
-            if !mentions_bot(&cache, &new_message).await && !is_legacy_command(&new_message) {
-                MarkovService::destruct_message(&new_message).await;
-            }
+    if !new_message.is_private() && SettingsService::is_enabled(new_message.guild_id.unwrap().0 as i64, MARKOV_SETTING.to_string()).await {
+        if !mentions_bot(&cache, &new_message).await && !is_legacy_command(&new_message) {
+            MarkovService::destruct_message(&new_message).await;
+        }
 
-            // 7% chance after msg or always on @mention
-            if (thread_rng().gen_range(0..100) < 7 || mentions_bot(&cache, &new_message).await) && !is_legacy_command(&new_message) {
-                MarkovService::send_message(ctx, &new_message).await;
-            }
+        // 7% chance after msg or always on @mention
+        if (thread_rng().gen_range(0..100) < 7 || mentions_bot(&cache, &new_message).await) && !is_legacy_command(&new_message) {
+            MarkovService::send_message(ctx, &new_message).await;
         }
     }
 }

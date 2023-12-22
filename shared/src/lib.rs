@@ -1,4 +1,3 @@
-pub mod dbstuff;
 pub mod serenity_utils;
 
 pub fn add(left: usize, right: usize) -> usize {

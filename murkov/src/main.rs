@@ -22,7 +22,6 @@ mod markov_chains;
 mod voice;
 mod ai;
 mod yoking;
-pub mod utils;
 pub mod settings;
 pub mod handler;
 pub mod commands;
@@ -37,7 +36,7 @@ async fn main() {
     // load configs
     pretty_env_logger::init();
     let url = var("DATABASE_URL").expect("DATABASE_URL not found");
-    let token = var("BOT_TOKEN").expect("BOT_TOKEN not found");
+    let token = var("MURKOV_TOKEN").expect("MURKOV_TOKEN not found");
     let pool = PgPoolOptions::new()
         .max_lifetime(Duration::from_secs(10))
         .max_connections(25)

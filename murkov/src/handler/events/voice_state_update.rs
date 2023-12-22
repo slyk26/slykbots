@@ -1,6 +1,6 @@
 use serenity::model::prelude::VoiceState;
 use serenity::prelude::Context;
-use crate::utils::get_voicemanager;
+use shared::serenity_utils::get_voicemanager;
 
 pub async fn call(ctx: Context, old: Option<VoiceState>, new: VoiceState) {
     leave_when_alone(ctx, old ,new).await;

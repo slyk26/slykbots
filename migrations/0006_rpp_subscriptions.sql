@@ -1,7 +1,6 @@
-create table ai_chat_cache
+create table rpp_subscriptions
 (
     id         serial primary key,
     channel_id bigint  not null,
-    prompt     varchar not null
-
-)
+    subreddit  varchar not null
+);

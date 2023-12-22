@@ -17,7 +17,7 @@ RUN apt-get update
 RUN apt-get -y install cmake
 RUN cargo chef cook --release --recipe-path murkov/recipe.json
 COPY . .
-RUN cargo build --release --bin murkov --package slykbots
+RUN cargo build --release --bin murkov --package murkov
 
 FROM debian:bookworm-slim AS runtime
 COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/

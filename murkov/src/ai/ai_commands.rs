@@ -6,10 +6,10 @@ use serenity::framework::standard::macros::{command, group, hook};
 use serenity::http::Typing;
 use serenity::model::prelude::Message;
 use serenity::prelude::Context;
+use shared::serenity_utils::{reply, say};
 use crate::AI;
 use crate::ai::ai_cache_service::AiCacheService;
 use crate::settings::{AI_SETTING, SettingsService};
-use crate::utils::{reply, say};
 
 #[group]
 #[commands(ask, schizo)]

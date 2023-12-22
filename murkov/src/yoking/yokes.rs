@@ -4,8 +4,7 @@ use serenity::{framework::standard::{macros::{command, group}, CommandResult}, p
 use serenity::framework::standard::DispatchError;
 use serenity::framework::standard::macros::hook;
 use serenity::model::id::GuildId;
-
-use crate::utils::{reply, say};
+use shared::serenity_utils::{reply, say};
 
 #[group]
 #[commands(ping)]

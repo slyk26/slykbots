@@ -9,7 +9,11 @@ I bring back old features from bots that are now offline
 - [x] ai features (simple open ai api example)
 - [x] basically rythm bot (vc youtube/music bot) (also murkov)
 - [ ] soundcloud support
-- [ ] not quite nitro as second bot (fnb soon)
+- [x] reddit polling
+- [ ] fix broken reddit links
+- [ ] split music from murkov into new
+- [ ] fix rust workspace shit
+- [ ] ~~not quite nitro as second bot (fnb soon)~~
 
 ___
 
@@ -23,7 +27,8 @@ POSTGRES_PASSWORD=
 HOST=
 PORT=
 DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${HOST}:${PORT}/${POSTGRES_USER}
-BOT_TOKEN=
+MURKOV_TOKEN=
+RPP_TOKEN=
 RUST_LOG=murkov=debug
 AI=1
 MIN_WORDS=3
