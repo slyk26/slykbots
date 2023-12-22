@@ -1,15 +1,29 @@
 services:
-  bot:
-    build: .
-    command: ./murkov
+  murkov:
+    build:
+      dockerfile: murkov/Dockerfile
+      context: .
     env_file:
       - .env
     depends_on:
     - db
     container_name:
       murkov-bot
+    restart: always
+  rpp:
+    build:
+      dockerfile: rpp/Dockerfile
+      context: .
+    env_file:
+      - .env
+    depends_on:
+      - db
+    container_name:
+      rpp-bot
+    restart: always
   db:
-    container_name: murkov-db
+    container_name: slykbots-db
+    restart: always
     image: postgres:15
     environment:
       - POSTGRES_USER

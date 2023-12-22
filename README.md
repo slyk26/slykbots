@@ -1,8 +1,23 @@
-# murkov
+# slykbots
 
-markov chain discord bot with serenity + postgres 
+I bring back old features from bots that are now offline
 
-example `.env` file in project root directory:
+
+## features
+
+- [x] markov-chain bot (murkov)
+- [x] ai features (simple open ai api example)
+- [x] basically rythm bot (vc youtube/music bot) (also murkov)
+- [ ] soundcloud support
+- [x] reddit polling
+- [ ] fix broken reddit links
+- [ ] split music from murkov into new
+- [ ] fix rust workspace shit
+- [ ] ~~not quite nitro as second bot (fnb soon)~~
+
+___
+
+`.env` file so I don't get dementia
 
 ```
 POSTGRES_USER=
@@ -12,24 +27,18 @@ POSTGRES_PASSWORD=
 HOST=
 PORT=
 DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${HOST}:${PORT}/${POSTGRES_USER}
-BOT_TOKEN=
+MURKOV_TOKEN=
+RPP_TOKEN=
 RUST_LOG=murkov=debug
 AI=1
 MIN_WORDS=3
+OPENAI_KEY=
+MAX_USER_PROMPTS=
+AI_MODEL_PROMPTS=gpt-3.5-instruct
+AI_MODEL_CHAT=gpt-3.5-turbo
+MAX_TOKENS=300
+MAX_ASK_PER_USER_PER10MIN=10
+MAX_PING_PER_USER_PER10MIN=1
+PROMPT_BASE=
 ```
 
-### TODO
-
-- [x] add openai api in dms and `ask` legacy command
-- [ ] optimize and debug "chat" mode of AI model
-- [x] .env file variable for loaded modules so i don't go broke
-- [ ] refactor existing code
-- [x] fixing markov message generation (don't use equal chance)
-- [x] keep current db model, so I don't junk it with same records
-- [ ] add or remove empty "image" messages
-- [ ] add modes for message generation (per server/user?)
-
-
-#### possible things in the future
-
-- [ ] making + hosting own ai model
