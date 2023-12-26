@@ -18,7 +18,6 @@ COPY . .
 RUN cargo build --release --bin rpp --package rpp
 
 FROM debian:bookworm-slim AS runtime
-COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/
 COPY --from=builder /target/release/rpp /usr/local/bin
 
 RUN apt-get update
