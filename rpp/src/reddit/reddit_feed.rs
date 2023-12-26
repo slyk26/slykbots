@@ -1,10 +1,11 @@
 use std::collections::HashMap;
+use std::env;
 use std::sync::Arc;
 use std::time::Duration;
-use feed_rs::model::{Entry, Feed};
+use feed_rs::model::{Entry, Feed, Person};
 use feed_rs::parser;
 use feed_rs::parser::ParseFeedError;
-use log::{debug, error, warn};
+use log::{debug, error};
 use serenity::http::Http;
 use serenity::model::id::ChannelId;
 use tokio::sync::Mutex;
@@ -15,10 +16,12 @@ use crate::reddit::{PostType, RedditPost};
 use crate::subscriptions::SubService;
 
 pub async fn subreddit_threads(cache: Arc<Mutex<HashMap<String, Vec<RedditPost>>>>, http: Arc<Http>) {
-    let mut i = time::interval(Duration::from_secs(60));
+    let feed_pause = env::var("FEED_PAUSE").unwrap_or("60".to_string()).parse::<u64>().unwrap_or(60);
+    let mut i = time::interval(Duration::from_secs(feed_pause));
     let scm = map_subscriptions().await;
 
     loop {
+        debug!("waiting for {feed_pause}s");
         i.tick().await;
         let mut js = JoinSet::new();
 
@@ -50,9 +53,11 @@ async fn map_subscriptions() -> HashMap<String, Vec<u64>> {
 }
 
 async fn fetch_feed(subreddit: &str) -> Result<Feed, ParseFeedError> {
+    let page = env::var("PAGE").unwrap_or("new".to_string());
+    debug!("loading {page}");
     let client = reqwest::Client::builder()
         .user_agent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").build().unwrap();
-    let mut content = client.get(format!("https://old.reddit.com/r/{subreddit}/new/.rss")).send()
+    let mut content = client.get(format!("https://old.reddit.com/r/{subreddit}/{page}/.rss")).send()
         .await.unwrap().text().await.unwrap();
 
     content = String::from(&content.as_str()[content.find('>').unwrap_or(0) + 1..]);
@@ -70,7 +75,11 @@ fn parse_entries(e: Vec<Entry>) -> Vec<RedditPost> {
         let typ = determine_posttype(&link);
         RedditPost {
             id: en.id.to_string(),
-            poster: en.authors.get(0).unwrap().clone().name,
+            poster: en.authors.get(0).unwrap_or(&Person {
+                name: "dummy".to_string(),
+                uri: None,
+                email: None,
+            }).clone().name,
             title: en.title.clone().unwrap().content,
             src: link,
             uploaded: en.published.unwrap(),
