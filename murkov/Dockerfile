@@ -19,7 +19,6 @@ RUN cargo build --release --bin murkov --package murkov
 
 FROM debian:bookworm-slim AS runtime
 COPY --from=builder /target/release/murkov /usr/local/bin
-RUN chmod +x /usr/local/bin/murkov-startup
 
 RUN apt-get update
 RUN apt-get -y install libopus-dev cmake protobuf-compiler build-essential autoconf automake libtool m4 ffmpeg curl python3
