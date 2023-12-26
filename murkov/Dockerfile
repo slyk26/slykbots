@@ -18,7 +18,6 @@ COPY . .
 RUN cargo build --release --bin murkov --package murkov
 
 FROM debian:bookworm-slim AS runtime
-COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/
 COPY --from=builder /target/release/murkov /usr/local/bin
 RUN chmod +x /usr/local/bin/murkov-startup
 
