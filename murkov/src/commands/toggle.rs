@@ -1,3 +1,4 @@
+use std::env;
 use serenity::async_trait;
 use serenity::builder::{CreateApplicationCommand, CreateApplicationCommandOption};
 use serenity::model::application::command::CommandOptionType;
@@ -46,6 +47,10 @@ impl SlashCommand for Toggle {
     }
 
     async fn execute(&self, ctx: &Context, command: &ApplicationCommandInteraction) -> Result<(), SerenityError> {
+        if env::var("TOGGLE_DISABLED").unwrap_or("false".to_string()).parse::<bool>().unwrap_or(false) {
+             return Ok(());
+        }
+
         let options = &command.data.options;
 
         let module = options.iter().find(|o| o.name.eq("module")).unwrap().value.as_ref().unwrap().to_string().replace('\"',"");
