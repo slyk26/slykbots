@@ -12,7 +12,8 @@ I bring back old features from bots that are now offline
 - [x] reddit polling
 - [ ] fix broken reddit links
 - [ ] split music from murkov into new
-- [ ] fix rust workspace shit
+- [x] fix rust workspace shit - it's separated packages now
+- [ ] clean up code
 - [ ] ~~not quite nitro as second bot (fnb soon)~~
 
 ___
@@ -29,7 +30,7 @@ PORT=
 DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${HOST}:${PORT}/${POSTGRES_USER}
 MURKOV_TOKEN=
 RPP_TOKEN=
-RUST_LOG=murkov=debug
+RUST_LOG=murkov=debug,rpp=debug
 AI=1
 MIN_WORDS=3
 OPENAI_KEY=
@@ -40,5 +41,8 @@ MAX_TOKENS=300
 MAX_ASK_PER_USER_PER10MIN=10
 MAX_PING_PER_USER_PER10MIN=1
 PROMPT_BASE=
+FEED_PAUSE=
+PAGE=
+TOGGLE_DISABLED
 ```
 

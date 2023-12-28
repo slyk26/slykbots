@@ -1,16 +1,13 @@
-use std::collections::HashMap;
-use std::sync::Arc;
 use log::info;
 use serenity::model::gateway::Ready;
 use serenity::prelude::*;
 use shared::serenity_utils::types::COMMANDS;
-use crate::reddit::{RedditPost, subreddit_threads};
+use crate::reddit::{post_thread, fetch_thread};
 
 pub async fn call(c: &Context, ready: &Ready, _: &COMMANDS) {
     info!("{} is online!", ready.user.name);
 
-    let cache: Arc<Mutex<HashMap<String, Vec<RedditPost>>>> = Arc::new(Mutex::new(HashMap::new()));
-
-    subreddit_threads(cache.clone(), c.http.clone()).await;
+    fetch_thread().await;
+    post_thread(c.http.clone()).await;
 }
 

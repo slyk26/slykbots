@@ -23,7 +23,7 @@ struct Voice;
 #[command]
 #[only_in(guilds)]
 async fn join(ctx: &Context, msg: &Message) -> CommandResult {
-    if ! SettingsService::is_enabled(msg.guild_id.unwrap().0 as i64, MUSIC_SETTING.to_string()).await { return Ok(()) }
+    if !SettingsService::is_enabled(msg.guild_id.unwrap().0 as i64, MUSIC_SETTING.to_string()).await { return Ok(()); }
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
     let chan_id = msg.channel_id;
@@ -102,13 +102,11 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             };
 
             let mut handler = handler_lock.lock().await;
-            let source: Option<Restartable>;
-
-            if Url::parse(&url).is_ok() {
-                source = url_source(url).await;
+            let source: Option<Restartable> = if Url::parse(&url).is_ok() {
+                url_source(url).await
             } else {
-                source = word_source(args.rewind()).await;
-            }
+                word_source(args.rewind()).await
+            };
 
             if source.is_none() {
                 say(chan_id, &ctx.http, "watafak I failed using youtube").await;
@@ -200,9 +198,9 @@ async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 
                 if let Some(current) = queue.first() {
                     let uuid = current.uuid();
-                    for i in 0..queue.len()  {
+                    for i in 0..queue.len() {
                         if i > 10 {
-                            embed.field(format!("And {} more...", queue.len()-i), "", false);
+                            embed.field(format!("And {} more...", queue.len() - i), "", false);
                             break;
                         }
                         let track = queue.get(i).unwrap();
@@ -237,13 +235,13 @@ async fn info(ctx: &Context, msg: &Message) -> CommandResult {
             m.embed(|e| {
                 let m = current_song.metadata();
                 let embed = e.colour(Color::from_rgb(255, 0, 0)).title(m.title.as_ref().unwrap().to_string())
-                .image(m.thumbnail.as_ref().unwrap())
-                .field("Channel", format!("{} - [Link]({})", m.artist.as_ref().unwrap_or(&"unknown".to_string()), m.source_url.as_ref().unwrap_or(&"".to_string())) , false)
-                .field("Length", format_duration(&m.duration.unwrap()), true)
-                .footer(|f|
-                    f.icon_url("https://www.youtube.com/s/desktop/1f2ae858/img/favicon_48x48.png")
-                .text(format!(" x slykbots - v{}", env!("CARGO_PKG_VERSION")))
-                );
+                    .image(m.thumbnail.as_ref().unwrap())
+                    .field("Channel", format!("{} - [Link]({})", m.artist.as_ref().unwrap_or(&"unknown".to_string()), m.source_url.as_ref().unwrap_or(&"".to_string())), false)
+                    .field("Length", format_duration(&m.duration.unwrap()), true)
+                    .footer(|f|
+                        f.icon_url("https://www.youtube.com/s/desktop/1f2ae858/img/favicon_48x48.png")
+                            .text(format!(" x slykbots - v{}", env!("CARGO_PKG_VERSION")))
+                    );
                 embed
             })
         }).await;
@@ -294,7 +292,7 @@ fn format_track(first: bool, m: &Metadata) -> (String, String) {
         top = String::from("👉 ");
     }
 
-    top.add_assign(m.title.clone().unwrap_or(String::new()).as_str());
+    top.add_assign(m.title.clone().unwrap_or_default().as_str());
     let bottom =
         format!("by {}", m.artist.clone().unwrap());
 
@@ -328,7 +326,7 @@ async fn word_source(args: &mut Args) -> Option<Restartable> {
 
 fn is_in_vc(voice_states: HashMap<UserId, VoiceState>, user: UserId, bot: UserId) -> bool {
     if voice_states.contains_key(&user) && voice_states.contains_key(&bot) {
-        return voice_states.get(& user).unwrap().channel_id.unwrap() == voice_states.get(&bot).unwrap().channel_id.unwrap()
+        return voice_states.get(&user).unwrap().channel_id.unwrap() == voice_states.get(&bot).unwrap().channel_id.unwrap();
     }
     false
 }

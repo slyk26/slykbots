@@ -1,6 +1,7 @@
+use std::hash::{Hash, Hasher};
 use sqlx::types::chrono::{DateTime, Utc};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Ord, PartialOrd, Eq)]
 pub struct RedditPost {
     pub id: String,
     pub poster: String,
@@ -8,17 +9,32 @@ pub struct RedditPost {
     pub src: String,
     pub uploaded: DateTime<Utc>,
     pub t: PostType,
+    pub subreddit: String,
 }
 
 impl PartialEq for RedditPost {
     fn eq(&self, other: &Self) -> bool {
-        self.id.eq(&other.id)
+        // literally same post
+        self.id.eq(&other.id) ||
+            // same spamposting retard
+            (self.title.eq(&other.title) && self.poster.eq(&other.poster))
     }
 }
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
+
+impl Hash for RedditPost {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.src.hash(state);
+        self.poster.hash(state);
+    }
+}
+
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum PostType {
     Text,
     Media,
     Gallery,
+    Video,
+    External,
+    DiscordInvite
 }
