@@ -26,7 +26,7 @@ impl SlashCommand for Music {
             .colour(Color::from_rgb(255, 0, 0))
             .field(format!("{}join", LEGACY_CMD), "joins the vc\n(you have to be in a vc first)", false)
             .field(format!("{}play", LEGACY_CMD), "play a url or use words to search", false)
-            .field(format!("{}play", LEGACY_CMD), "shows info about current song", false)
+            .field(format!("{}info", LEGACY_CMD), "shows info about current song", false)
             .field(format!("{}stop", LEGACY_CMD), "clears queue", false)
             .field(format!("{}remove x", LEGACY_CMD), "removes x songs (newly added are removed frst) - default: 1", false)
             .field(format!("{}leave", LEGACY_CMD), "removes bot from vc\n(also clears queue)", false)
