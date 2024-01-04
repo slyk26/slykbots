@@ -48,8 +48,8 @@ async fn main() {
         .group(&VOICE_GROUP)
         .group(&AI_GROUP)
         .group(&YOKES_GROUP)
-        .bucket("ping", |b| b.limit(var("MAX_PING_PER_USER_PER10MIN").unwrap_or("1".to_string()).parse::<u32>().unwrap()).time_span(600).limit_for(LimitedFor::User)).await
-        .bucket("openai", |b| b.limit(var("MAX_ASK_PER_USER_PER10MIN").unwrap_or("5".to_string()).parse::<u32>().unwrap()).time_span(600).limit_for(LimitedFor::User)).await
+        .bucket("ping", |b| b.limit(var("MAX_PING_PER_USER_PER10MIN").unwrap_or("1".to_string()).parse::<u32>().unwrap()).time_span(0).limit_for(LimitedFor::User)).await
+        .bucket("openai", |b| b.limit(var("MAX_ASK_PER_USER_PER10MIN").unwrap_or("5".to_string()).parse::<u32>().unwrap()).time_span(0).limit_for(LimitedFor::User)).await
         .on_dispatch_error(dispatch_error_hook)
         .normal_message(dm_chatting);
 
